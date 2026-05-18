@@ -9,14 +9,15 @@ import SwiftUI
 
 @main
 struct LightningTaskApp: App {
+    let panelController = PanelController()
+    
     var body: some Scene {
-//        MenuBarExtra {
-//            ContentView()
-//        }
         MenuBarExtra {
-            ContentView()
+            Button("Open") { panelController.toggle() }
+                        Divider()
+                        Button("Quit") { NSApp.terminate(nil) }
         } label: {
-            Image(systemName: "checklist")
+            Image(systemName: "bolt.circle")
         }
         .menuBarExtraStyle(.window)
 
