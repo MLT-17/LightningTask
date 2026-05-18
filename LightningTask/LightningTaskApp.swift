@@ -10,8 +10,15 @@ import SwiftUI
 @main
 struct LightningTaskApp: App {
     var body: some Scene {
-        WindowGroup {
+//        MenuBarExtra {
+//            ContentView()
+//        }
+        MenuBarExtra {
             ContentView()
+        } label: {
+            Image(systemName: "checklist")
         }
+        .menuBarExtraStyle(.window)
+
     }
 }
