@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		215871512FBC8F56009DC44D /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 215871502FBC8F56009DC44D /* HotKey */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		21073E2E2FB4C52A00D36228 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				215871512FBC8F56009DC44D /* HotKey in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = LightningTask;
 			packageProductDependencies = (
+				215871502FBC8F56009DC44D /* HotKey */,
 			);
 			productName = LightningTask;
 			productReference = 21073E202FB4C52900D36228 /* LightningTask.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = 21073E172FB4C52900D36228;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2158714F2FBC8F56009DC44D /* XCRemoteSwiftPackageReference "HotKey" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 21073E212FB4C52900D36228 /* Products */;
 			projectDirPath = "";
@@ -575,6 +584,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		2158714F2FBC8F56009DC44D /* XCRemoteSwiftPackageReference "HotKey" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/soffes/HotKey";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		215871502FBC8F56009DC44D /* HotKey */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2158714F2FBC8F56009DC44D /* XCRemoteSwiftPackageReference "HotKey" */;
+			productName = HotKey;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 21073E182FB4C52900D36228 /* Project object */;
 }

@@ -4,22 +4,19 @@
 //
 //  Created by Matthias Tyca on 13.05.26.
 //
-
+import HotKey
 import SwiftUI
 
 @main
 struct LightningTaskApp: App {
-    let panelController = PanelController()
+    let panelController = LightningTaskPanelController()
+    let hotKey = HotKey(key: .t, modifiers: [.command])
     
-    var body: some Scene {
-        MenuBarExtra {
-            Button("Open") { panelController.toggle() }
-                        Divider()
-                        Button("Quit") { NSApp.terminate(nil) }
-        } label: {
-            Image(systemName: "bolt.circle")
+    init () {
+        hotKey.keyDownHandler = { [panelController] in
+            panelController.toggle()
         }
-        .menuBarExtraStyle(.window)
-
     }
+    
+    var body: some Scene { }
 }

@@ -8,22 +8,38 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var task: String = ""
+    @FocusState private var isFocused: Bool
+    
+    let panelController: LightningTaskPanelController
+    
     var body: some View {
-   
-            VStack {
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Hello, world!")
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.ultraThinMaterial)
-            
-        
-        
+        VStack {
+            TextField("New Task", text: $task, prompt: Text("New Task"))
+             
+                .font(.system(size: 30))
+                .fontWeight(.bold)
+                .focused($isFocused)
+                .textFieldStyle(.plain)  // no background
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isFocused = true
+                    }
+                }
+                .onSubmit {
+                    panelController.close()
+                }
+                .onKeyPress(.escape) {
+                    panelController.close()
+                    return .handled
+                }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(panelController: LightningTaskPanelController())
 }
