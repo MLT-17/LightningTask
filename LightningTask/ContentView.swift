@@ -12,6 +12,7 @@ struct ContentView: View {
     @FocusState private var isFocused: Bool
     
     let panelController: LightningTaskPanelController
+    let reminderViewModel: ReminderViewModel
     
     var body: some View {
         VStack {
@@ -21,13 +22,18 @@ struct ContentView: View {
                 .fontWeight(.bold)
                 .focused($isFocused)
                 .textFieldStyle(.plain)  // no background
+                .tint(.white)
                 .onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         isFocused = true
                     }
                 }
                 .onSubmit {
-                    panelController.close()
+                    Task {
+                        await reminderViewModel.createReminder(text: task)
+                        panelController.close()
+                    }
+                   
                 }
                 .onKeyPress(.escape) {
                     panelController.close()
@@ -36,10 +42,10 @@ struct ContentView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.thinMaterial.opacity(0.85), in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
 #Preview {
-    ContentView(panelController: LightningTaskPanelController())
+    ContentView(panelController: LightningTaskPanelController(), reminderViewModel: ReminderViewModel())
 }
