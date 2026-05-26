@@ -18,23 +18,49 @@ class LightningTaskPanel: NSPanel {
 class LightningTaskPanelController {
     private var panel: LightningTaskPanel?
     private var eventMonitor: Any?
+    private var reminderViewModel: ReminderViewModel = ReminderViewModel()
     // use statusitem instead of menubarExtra.
     // Click on icon should just toggle panel, not open a menu
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     
     init() {
-        statusItem.button?.image = NSImage(systemSymbolName: "bolt.circle", accessibilityDescription: nil)
+        let image = NSImage(systemSymbolName: "bolt.circle", accessibilityDescription: nil)
+        let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        statusItem.button?.image = image?.withSymbolConfiguration(config)
         statusItem.button?.action = #selector(toggle)
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp]) // use mouseup to toggle only after intentional click of user
         statusItem.button?.target = self
     }
     
     
     @objc func toggle() {
-        if let panel = self.panel, panel.isVisible {
-            close()
+        if let event = NSApp.currentEvent, event.type == .rightMouseUp {
+            // right click
+            showContextMenu()
         } else {
-            open()
+            // left click
+            if let panel = self.panel, panel.isVisible {
+                close()
+            } else {
+                open()
+            }
         }
+    }
+    
+    @objc func showContextMenu() {
+        let menu = NSMenu()
+        let quitItem = NSMenuItem(title: "Quit LightningTask", action: #selector(quit), keyEquivalent: "")
+        quitItem.target = self
+        menu.addItem(quitItem)
+        statusItem.menu = menu
+        // opens the menu
+        statusItem.button?.performClick(nil)
+        // Detach menu so left click continues to trigger toggle
+        statusItem.menu = nil
+    }
+    
+    @objc func quit() {
+        NSApp.terminate(nil)
     }
     
     func open() {
@@ -67,7 +93,7 @@ class LightningTaskPanelController {
         panel.isMovableByWindowBackground = true
         
         // include SwiftUI-View
-        let hostingView = NSHostingController(rootView: ContentView(panelController: self))
+        let hostingView = NSHostingController(rootView: ContentView(panelController: self, reminderViewModel: reminderViewModel))
         panel.contentViewController = hostingView
         
         // size & position
