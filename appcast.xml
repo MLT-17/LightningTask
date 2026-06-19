@@ -1,11 +1,15 @@
-<?xml version='1.0' encoding='utf-8'?>
-<rss xmlns:sparkle="http://andymatuschak.org" version="2.0">
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
-        <title>LightningTask Updates</title>
+        <title>LightningTask</title>
         <item>
-            <title>Version 0.2</title>
-            <pubDate>Fri, 19 Jun 2026 17:08:25 +0100</pubDate>
-            <enclosure url="http://localhost:8080/LightningTask.zip" length="6432992" type="application/zip" sparkle:version="1" sparkle:shortVersionString="0.2" />
+            <title>0.2</title>
+            <pubDate>Fri, 19 Jun 2026 17:29:55 +0200</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>0.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="http://localhost:8000/LightningTask.zip" length="6433221" type="application/octet-stream" sparkle:edSignature="ezO8zQRgf0wfixl9yAis4Ig/h6DNELnkZjd0sDxnBEtNZgo4zPI6v3Hu/LQIFFLKqdj5S56SAwD+w8W2FaxXBg=="/>
         </item>
     </channel>
 </rss>
