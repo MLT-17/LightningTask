@@ -11,7 +11,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+        
+      - name: Debug keychain environment
+        run: |
+          echo "HOME=$HOME"
+          whoami
+          security list-keychains -d user
+          security find-identity -v -p codesigning
+    
       - name: Build (Release, automatische Build-Nummer)
         run: |
           xcodebuild \
