@@ -67,7 +67,7 @@ struct LightningTaskPanelView: View {
                     .foregroundStyle(.secondary)
                 TextField("New Task", text: $todo, prompt: Text("New Task"))
                     .font(.system(size: 30))
-                    .fontWeight(.bold)
+                    .fontWeight(.semibold)
                     .focused($isFocused)
                     .textFieldStyle(.plain)  // no background
                     .tint(.white)
