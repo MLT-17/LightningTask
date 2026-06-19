@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Sparkle
 import SwiftUI
 
 class LightningTaskPanel: NSPanel {
@@ -19,11 +20,19 @@ class LightningTaskPanelController {
     private var panel: LightningTaskPanel?
     private var eventMonitor: Any?
     private var reminderViewModel: ReminderViewModel = ReminderViewModel()
+    private let updaterController: SPUStandardUpdaterController
     // use statusitem instead of menubarExtra.
     // Click on icon should just toggle panel, not open a menu
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     
     init() {
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: true, // start with init
+            // hook for customization of behavior and ui, nil here
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
+        
         let image = NSImage(systemSymbolName: "bolt.circle", accessibilityDescription: nil)
         let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
         statusItem.button?.image = image?.withSymbolConfiguration(config)
@@ -49,14 +58,42 @@ class LightningTaskPanelController {
     
     @objc func showContextMenu() {
         let menu = NSMenu()
+        
+        // Version
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+
+        let versionItem = NSMenuItem(
+            title: "Version \(version) (\(build))",
+            action: nil,
+            keyEquivalent: ""
+        )
+        versionItem.isEnabled = false
+        menu.addItem(versionItem)
+        menu.addItem(NSMenuItem.separator())
+        
+        // Update
+        let updateItem = NSMenuItem(
+            title: "Nach Updates suchen…",
+            action: #selector(checkForUpdates),
+            keyEquivalent: ""
+        )
+        updateItem.target = self
+        menu.addItem(updateItem)
+        // Quit
         let quitItem = NSMenuItem(title: "Quit LightningTask", action: #selector(quit), keyEquivalent: "")
         quitItem.target = self
         menu.addItem(quitItem)
+       
         statusItem.menu = menu
         // opens the menu
         statusItem.button?.performClick(nil)
         // Detach menu so left click continues to trigger toggle
         statusItem.menu = nil
+    }
+    
+    @objc func checkForUpdates() {
+        updaterController.updater.checkForUpdates()
     }
     
     @objc func quit() {
@@ -93,7 +130,7 @@ class LightningTaskPanelController {
         panel.isMovableByWindowBackground = true
         
         // include SwiftUI-View
-        let hostingView = NSHostingController(rootView: ContentView(panelController: self, reminderViewModel: reminderViewModel))
+        let hostingView = NSHostingController(rootView: LightningTaskPanelView(panelController: self, reminderViewModel: reminderViewModel))
         panel.contentViewController = hostingView
         
         // size & position
@@ -116,7 +153,6 @@ class LightningTaskPanelController {
     }
     
     func close() {
-        
         self.panel?.close()
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
