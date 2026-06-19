@@ -19,6 +19,9 @@ jobs:
           security list-keychains -d user
           security find-identity -v -p codesigning
     
+      - name: Keychain-Suche auf ci-build beschränken
+        run: security list-keychains -d user -s ci-build.keychain
+
       - name: Build (Release, automatische Build-Nummer)
         run: |
           xcodebuild \
@@ -28,6 +31,10 @@ jobs:
             -derivedDataPath build \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             clean build
+
+      - name: Keychain-Suchliste wiederherstellen
+        if: always()
+        run: security list-keychains -d user -s ci-build.keychain login.keychain-db
 
       - name: Alte Releases aufräumen & neue Zip erstellen
         env:
