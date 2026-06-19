@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://andymatuschak.org" version="2.0">
+    <channel>
+        <title>LightningTask Updates</title>
+        <item>
+            <title>Version 0.2</title>
+            <pubDate>Fri, 19 Jun 2026 17:08:25 +0100</pubDate>
+            <enclosure url="http://localhost:8080/LightningTask.zip" length="6432992" type="application/zip" sparkle:version="1" sparkle:shortVersionString="0.2" />
+        </item>
+    </channel>
+</rss>
