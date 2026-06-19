@@ -96,7 +96,7 @@ struct LightningTaskPanelView: View {
                     guard !Task.isCancelled else { return }
                     suggestion = try? await reminderViewModel.suggestLists(for: todo)
                     selected = suggestion?.listNames.first ?? ""
-                    print(suggestion)
+                    print(suggestion ?? "")
                 }
             }
             // no if let suggestions, since i dont want a constant
