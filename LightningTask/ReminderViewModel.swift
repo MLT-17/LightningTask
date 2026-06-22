@@ -17,6 +17,8 @@ import FoundationModels
         SystemLanguageModel.default.availability == .available
     }
     
+    private(set) var isSaving: Bool = false
+    
     init() {
         Task {
             do {
@@ -39,7 +41,7 @@ import FoundationModels
         return calendars
     }
     
-    func createReminder(text: String, listName: String, suggestion: TaskSuggestion?) async {
+    func createReminder(text: String, listName: String, suggestion: TaskSuggestion?,  alarmEnabled: Bool) async throws {
         let reminder = EKReminder(eventStore: reminderStore)
         reminder.title = text
         
@@ -64,13 +66,21 @@ import FoundationModels
                     ? [.year, .month, .day, .hour, .minute]
                     : [.year, .month, .day]
                 reminder.dueDateComponents = Calendar.current.dateComponents(components, from: date)
+                
+                if alarmEnabled {
+                    let alarm = EKAlarm(relativeOffset: 0)
+                    reminder.addAlarm(alarm)
+                }
             }
+            
         }
         
         do {
+            print(reminder.alarms ?? [])
             try reminderStore.save(reminder, commit: true)
         } catch {
             print("Failed to save reminder with text: \(text)")
+            throw error
         }
     }
     
@@ -99,6 +109,24 @@ import FoundationModels
             result.append(inbox)
         }
         return result
+    }
+    
+    func saveCurrentItems(suggestion: TaskSuggestion?, todo: String, listname: String, alarmEnabled: Bool) async -> Bool {
+        guard !isSaving else { return false }
+        isSaving = true
+        // defer: executes the code block at the end of the of the function. doesn't matter if it return successfully or throws. position of defer does not matter... execution is always at the end
+        // isSaving = false at the end of the function would not be executed if createReminder would throw an error... defer will be executed anyway
+        defer { isSaving = false }
+        do {
+            
+            let items = suggestion?.items ?? [todo]
+            for item in items {
+                try await createReminder(text: item, listName: listname, suggestion: suggestion, alarmEnabled: alarmEnabled)
+            }
+        } catch {
+            return false
+        }
+        return true
     }
     
     func suggestLists(for taskTitle: String) async throws -> TaskSuggestion {

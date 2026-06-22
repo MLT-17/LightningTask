@@ -13,25 +13,26 @@ struct LightningTaskPanelView: View {
     @FocusState private var isFocused: Bool
     @State private var selected: String = ""
     @State private var showDatePicker = false
+    @State private var alarmEnabled: Bool = true
     
     let panelController: LightningTaskPanelController
     let reminderViewModel: ReminderViewModel
-   
+    
     var suggestedDateValue: Date? {
         guard let suggestion else { return nil }
         let date = suggestion.dueDate
         let time = suggestion.dueTime
         if date.isEmpty && time.isEmpty { return nil }
-
+        
         let today = String(ISO8601DateFormatter().string(from: .now).prefix(10))
         let dateString = date.isEmpty ? today : date
         let timeString = time.isEmpty ? "00:00" : time
-
+        
         let parser = DateFormatter()
         parser.dateFormat = "yyyy-MM-dd HH:mm"
         return parser.date(from: "\(dateString) \(timeString)")
     }
-
+    
     var suggestedDate: String {
         guard let date = suggestedDateValue else { return "" }
         let hasTime = !(suggestion?.dueTime.isEmpty ?? true)
@@ -40,7 +41,7 @@ struct LightningTaskPanelView: View {
         display.locale = Locale(identifier: "de_DE")
         return display.string(from: date)
     }
-
+    
     /// Bindet den DatePicker direkt an `suggestion`. Schreibt nur, wenn der User
     /// im Picker tatsächlich etwas ändert — der initiale Anzeigewert triggert
     /// keinen Setter (im Gegensatz zu `@State pickerDate` + `onChange`).
@@ -51,13 +52,15 @@ struct LightningTaskPanelView: View {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"
                 suggestion?.dueDate = dateFormatter.string(from: newValue)
-
+                
                 let timeFormatter = DateFormatter()
                 timeFormatter.dateFormat = "HH:mm"
                 suggestion?.dueTime = timeFormatter.string(from: newValue)
             }
         )
     }
+    
+    
     
     var body: some View {
         VStack {
@@ -71,33 +74,43 @@ struct LightningTaskPanelView: View {
                     .focused($isFocused)
                     .textFieldStyle(.plain)  // no background
                     .tint(.white)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        isFocused = true
-                    }
-                }
-                .onSubmit {
-                    Task {
-                        let items = suggestion?.items ?? [todo]
-                        for item in items {
-                            await reminderViewModel.createReminder(text: item, listName: selected, suggestion: suggestion)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isFocused = true
                         }
-                        panelController.close()
                     }
-                }
-                .onKeyPress(.escape) {
-                    panelController.close()
-                    return .handled
-                }
+                    .onKeyPress(.escape) {
+                        panelController.close()
+                        return .handled
+                    }
+                    .onKeyPress(keys: [.return]) { keyPress in
+                        let commandPressed = keyPress.modifiers.contains(.command)
+                       
+                            Task {
+                               let itemSaved = await reminderViewModel.saveCurrentItems(suggestion: suggestion, todo: todo, listname: selected, alarmEnabled: alarmEnabled)
+                                if itemSaved {
+                                    if commandPressed {
+                                        suggestion = nil
+                                        todo = ""
+                                        selected = ""
+                                        alarmEnabled = true
+                                    } else {
+                                        panelController.close()
+                                    }
+                                }
+                            }
+                            return .handled
+                    }
                 // task is set through swiftui
-                .task(id: todo) {
-                    guard todo.count > 2, reminderViewModel.modelAvailable else { return }
-                    try? await Task.sleep(for: .milliseconds(500))
-                    guard !Task.isCancelled else { return }
-                    suggestion = try? await reminderViewModel.suggestLists(for: todo)
-                    selected = suggestion?.listNames.first ?? ""
-                    print(suggestion ?? "")
-                }
+                    .task(id: todo) {
+                        guard todo.count > 2, reminderViewModel.modelAvailable else { return }
+                        try? await Task.sleep(for: .milliseconds(500))
+                        guard !Task.isCancelled else { return }
+                        suggestion = try? await reminderViewModel.suggestLists(for: todo)
+                        selected = suggestion?.listNames.first ?? ""
+                        alarmEnabled = true
+                        print(suggestion ?? "")
+                    }
             }
             // no if let suggestions, since i dont want a constant
             if suggestion != nil {
@@ -124,8 +137,10 @@ struct LightningTaskPanelView: View {
                                         .datePickerStyle(.stepperField)
                                         .padding()
                                 }
+                            AlarmButton(alarmEnabled: $alarmEnabled)
+                            
                         }
-                       
+                        
                         Spacer()
                     }
                 }

@@ -3,13 +3,13 @@
     <channel>
         <title>LightningTask</title>
         <item>
-            <title>0.2</title>
-            <pubDate>Fri, 19 Jun 2026 17:29:55 +0200</pubDate>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>0.2</sparkle:shortVersionString>
+            <title>0.3</title>
+            <pubDate>Mon, 22 Jun 2026 13:13:25 +0200</pubDate>
+            <sparkle:version>8</sparkle:version>
+            <sparkle:shortVersionString>0.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="http://localhost:8000/LightningTask.zip" length="6433221" type="application/octet-stream" sparkle:edSignature="ezO8zQRgf0wfixl9yAis4Ig/h6DNELnkZjd0sDxnBEtNZgo4zPI6v3Hu/LQIFFLKqdj5S56SAwD+w8W2FaxXBg=="/>
+            <enclosure url="http://localhost:8000/LightningTask.zip" length="6444487" type="application/octet-stream" sparkle:edSignature="sjOJTzbXlDj04Lu1LZIdO5FSjCV54OU+TRLMFXfxDpjnmaGYA7NPTSC6XqRARtUAftqpeQ+D21jyq6h3656UDw=="/>
         </item>
     </channel>
 </rss>
