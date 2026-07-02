@@ -99,14 +99,16 @@ import FoundationModels
         
         if matches.isEmpty {
             // Fallback: Inbox + ein paar häufig genutzte
+            // TODO: search for most used ones
             return reminderLists.filter { ["Inbox", "Privat", "Goals"].contains($0.title) }
         }
         
         // Top-Matches + immer Inbox als Fallback dabei
         var result = matches.prefix(5).map { $0.0 }
-        if let inbox = reminderLists.first(where: { $0.title == "Inbox" }),
-           !result.contains(where: { $0.calendarIdentifier == inbox.calendarIdentifier }) {
-            result.append(inbox)
+        let standardListTitle: String = reminderStore.defaultCalendarForNewReminders()?.title ?? ""
+        if let defaultList = reminderLists.first(where: { $0.title == standardListTitle }),
+           !result.contains(where: { $0.calendarIdentifier == defaultList.calendarIdentifier }) {
+            result.append(defaultList)
         }
         return result
     }
@@ -325,5 +327,27 @@ import FoundationModels
             }
         }
         return dp[aChars.count][bChars.count]
+    }
+    
+    func suggestedDateValue(for suggestion: TaskSuggestion?) -> Date? {
+        guard let suggestion = suggestion else { return nil }
+        let date = suggestion.dueDate
+        let time = suggestion.dueTime
+        if date.isEmpty && time.isEmpty { return nil }
+        let today = String(ISO8601DateFormatter().string(from: Date.now).prefix(10))
+        let dateString = date.isEmpty ? today : date
+        let timeString = time.isEmpty ? "00:00" : time
+        let parser = DateFormatter()
+        parser.dateFormat = "yyyy-MM-dd HH:mm"
+        return parser.date(from: "\(dateString) \(timeString)")
+    }
+
+    func suggestedDateString(for suggestion: TaskSuggestion?) -> String {
+        guard let date = suggestedDateValue(for: suggestion) else { return "" }
+        let hasTime = !(suggestion?.dueTime.isEmpty ?? true)
+        let display = DateFormatter()
+        display.dateFormat = hasTime ? "EE, d. MMM · HH:mm" : "EE, d. MMM"
+        display.locale = Locale(identifier: "de_DE")
+        return display.string(from: date)
     }
 }

@@ -18,49 +18,21 @@ struct LightningTaskPanelView: View {
     let panelController: LightningTaskPanelController
     let reminderViewModel: ReminderViewModel
     
-    var suggestedDateValue: Date? {
-        guard let suggestion else { return nil }
-        let date = suggestion.dueDate
-        let time = suggestion.dueTime
-        if date.isEmpty && time.isEmpty { return nil }
-        
-        let today = String(ISO8601DateFormatter().string(from: .now).prefix(10))
-        let dateString = date.isEmpty ? today : date
-        let timeString = time.isEmpty ? "00:00" : time
-        
-        let parser = DateFormatter()
-        parser.dateFormat = "yyyy-MM-dd HH:mm"
-        return parser.date(from: "\(dateString) \(timeString)")
-    }
-    
-    var suggestedDate: String {
-        guard let date = suggestedDateValue else { return "" }
-        let hasTime = !(suggestion?.dueTime.isEmpty ?? true)
-        let display = DateFormatter()
-        display.dateFormat = hasTime ? "EE, d. MMM · HH:mm" : "EE, d. MMM"
-        display.locale = Locale(identifier: "de_DE")
-        return display.string(from: date)
-    }
-    
-    /// Bindet den DatePicker direkt an `suggestion`. Schreibt nur, wenn der User
-    /// im Picker tatsächlich etwas ändert — der initiale Anzeigewert triggert
-    /// keinen Setter (im Gegensatz zu `@State pickerDate` + `onChange`).
     private var pickerBinding: Binding<Date> {
         Binding(
-            get: { suggestedDateValue ?? .now },
+            get: { reminderViewModel.suggestedDateValue(for: suggestion) ?? .now },
             set: { newValue in
+                guard var s = suggestion else { return }
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"
-                suggestion?.dueDate = dateFormatter.string(from: newValue)
-                
+                s.dueDate = dateFormatter.string(from: newValue)
                 let timeFormatter = DateFormatter()
                 timeFormatter.dateFormat = "HH:mm"
-                suggestion?.dueTime = timeFormatter.string(from: newValue)
+                s.dueTime = timeFormatter.string(from: newValue)
+                suggestion = s
             }
         )
     }
-    
-    
     
     var body: some View {
         VStack {
@@ -127,8 +99,8 @@ struct LightningTaskPanelView: View {
                     }
                     
                     HStack {
-                        if !suggestedDate.isEmpty && suggestedDate != "" {
-                            ChipView(item: suggestedDate, isSelected: false)
+                        if !reminderViewModel.suggestedDateString(for: suggestion).isEmpty {
+                            ChipView(item: reminderViewModel.suggestedDateString(for: suggestion), isSelected: false)
                                 .onTapGesture {
                                     showDatePicker.toggle()
                                 }
@@ -155,3 +127,4 @@ struct LightningTaskPanelView: View {
 #Preview {
     LightningTaskPanelView(panelController: LightningTaskPanelController(), reminderViewModel: ReminderViewModel())
 }
+
