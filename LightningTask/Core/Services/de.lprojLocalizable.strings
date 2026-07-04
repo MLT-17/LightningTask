@@ -1,0 +1,26 @@
+/* 
+  Localizable.strings
+  LightningTask
+  
+  German localization
+*/
+
+// MARK: - Main UI
+"new_task_placeholder" = "Neue Aufgabe";
+"date_picker_label" = "Datum";
+
+// MARK: - Status Messages
+"reminder_access_granted" = "✅ Erinnerungszugriff gewährt";
+"reminder_access_denied" = "❌ Erinnerungszugriff verweigert";
+"model_available" = "📋 Modell verfügbar";
+"failed_to_save" = "❌ Speichern der Erinnerungen fehlgeschlagen";
+"failed_to_generate_suggestion" = "⚠️ Vorschlag konnte nicht generiert werden";
+
+// MARK: - Debug/Logging
+"raw_ai_list_names" = "🤖 KI-Rohdaten Listennamen";
+"after_snap" = "📍 Nach Snap";
+"token_candidates" = "🎯 Token-Kandidaten";
+"looking_for_list" = "Suche nach Liste";
+"available_lists" = "Verfügbare Listen";
+"alarms" = "Alarme";
+"failed_to_save_reminder" = "Erinnerung konnte nicht gespeichert werden mit Text";

@@ -10,34 +10,42 @@ import Sparkle
 import SwiftUI
 
 class LightningTaskPanel: NSPanel {
-    // need to override because of warning in console
-    // Warning: -[NSWindow makeKeyWindow] called on <NSPanel: 0x7a9c20000> windowNumber=3394 which returned NO from -[NSWindow canBecomeKeyWindow].
-    // we want the panel to become key
+    // Override to prevent console warning:
+    // "Warning: -[NSWindow makeKeyWindow] called on <NSPanel: 0x...> which returned NO from -[NSWindow canBecomeKeyWindow]"
+    // We want the panel to become the key window
     override var canBecomeKey: Bool { true }
 }
 
 class LightningTaskPanelController {
     private var panel: LightningTaskPanel?
     private var eventMonitor: Any?
-    private var reminderViewModel: ReminderViewModel = ReminderViewModel()
+    
+    // ✅ Dependency Injection: ViewModel wird von außen übergeben
+    private let reminderViewModel: ReminderViewModel
+    
     private let updaterController: SPUStandardUpdaterController
-    // use statusitem instead of menubarExtra.
-    // Click on icon should just toggle panel, not open a menu
+    
+    // Use NSStatusItem instead of SwiftUI MenuBarExtra
+    // Clicking the icon should toggle the panel, not open a menu
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     
-    init() {
+    /// Initializes the panel controller with injected dependencies
+    /// - Parameter reminderViewModel: The view model managing reminder state and operations
+    init(reminderViewModel: ReminderViewModel) {
+        self.reminderViewModel = reminderViewModel
+        
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: true, // start with init
-            // hook for customization of behavior and ui, nil here
+            startingUpdater: true, // Start updater on initialization
+            // Hooks for customization of behavior and UI (nil = use defaults)
             updaterDelegate: nil,
             userDriverDelegate: nil
         )
         
         let image = NSImage(systemSymbolName: "bolt.circle", accessibilityDescription: nil)
-        let config = NSImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        let config = NSImage.SymbolConfiguration(pointSize: LayoutConstants.menuBarIconSize, weight: .regular)
         statusItem.button?.image = image?.withSymbolConfiguration(config)
         statusItem.button?.action = #selector(toggle)
-        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp]) // use mouseup to toggle only after intentional click of user
+        statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp]) // Use mouse up to toggle only after intentional click
         statusItem.button?.target = self
     }
     
@@ -130,13 +138,21 @@ class LightningTaskPanelController {
         panel.isMovableByWindowBackground = true
         
         // include SwiftUI-View
-        let hostingView = NSHostingController(rootView: LightningTaskPanelView(panelController: self, reminderViewModel: reminderViewModel))
+        // ✅ Inversion of Control: View bekommt Closure statt Controller
+        let hostingView = NSHostingController(
+            rootView: LightningTaskPanelView(
+                onClose: { [weak self] in
+                    self?.close()
+                },
+                reminderViewModel: reminderViewModel
+            )
+        )
         panel.contentViewController = hostingView
         
-        // size & position
-        // contentSize is size WITH frame (but we don't have one here). if we had one
-        // we would have to use "setFrameOrigin"
-        let size = CGSize(width: 600, height: 80)
+        // Size & position
+        // contentSize is the size WITH frame (but we don't have one here)
+        // If we had a frame, we would use "setFrameOrigin"
+        let size = CGSize(width: LayoutConstants.panelWidth, height: LayoutConstants.panelMinHeight)
         panel.setContentSize(size)
         centerOnScreen(panel)
         // panel is key window (window that gets keyboard input) and is set to front
@@ -153,6 +169,9 @@ class LightningTaskPanelController {
     }
     
     func close() {
+        // ✅ Reset state before closing
+        reminderViewModel.reset()
+        
         self.panel?.close()
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
