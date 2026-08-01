@@ -28,7 +28,7 @@ LightningTask/
 │   ├── Services/                 # Business logic layer
 │   │   ├── ReminderService.swift # EventKit integration
 │   │   └── AIService.swift       # Foundation Models integration
-│   └── Extensions/               # Utility extensions
+│   └── Utilities/                # Utility extensions
 ├── Features/
 │   └── QuickEntry/               # Main feature
 │       ├── ViewModels/           # ReminderViewModel
@@ -123,6 +123,26 @@ xcodebuild test -scheme LightningTask
 # Or in Xcode
 ⌘U
 ```
+
+### Testing Sparkle Updates Locally
+
+`build_and_update.sh` builds a release, signs the appcast, and serves it on
+`localhost:8000` so you can test the full update flow without a Developer ID certificate.
+
+**Requirement:** `generate_appcast` from the Sparkle Homebrew cask:
+```bash
+brew install --cask sparkle
+```
+
+**Steps:**
+1. Make sure a previous version of the app is already running (the one that will *receive* the update)
+2. Run the script — it bumps the build number, builds a new release, and starts the server:
+```bash
+chmod +x build_and_update.sh   # first time only
+./build_and_update.sh
+```
+3. In the running app: right-click the menu bar icon → **Check for Updates…**
+4. Press **Ctrl+C** to stop the server when done
 
 ## 🤝 Contributing
 
