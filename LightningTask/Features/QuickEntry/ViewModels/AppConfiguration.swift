@@ -95,8 +95,6 @@ extension AppConfiguration {
         minimumCharactersForSuggestion: Int = 2
     ) -> AppConfiguration {
         var config = AppConfiguration()
-        // Note: This is a simplified approach. For full testability,
-        // consider making AppConfiguration a class or using a protocol.
         return config
     }
 }

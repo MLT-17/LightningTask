@@ -93,7 +93,6 @@ import os
                     dueTime: suggestion?.dueTime ?? "",
                     alarmEnabled: alarmEnabled
                 )
-                // ✅ createReminder is now synchronous (store.save doesn't need await)
                 try reminderService.createReminder(options: options)
             }
             return true
@@ -108,11 +107,9 @@ import os
     func refreshSuggestion() async {
         guard todo.count > 2, modelAvailable else { return }
         
-        // Debounce
         try? await Task.sleep(for: .milliseconds(500))
         guard !Task.isCancelled else { return }
         
-        // Generate suggestion
         do {
             suggestion = try await generateSuggestion(for: todo)
             selected = suggestion?.listNames.first
@@ -152,11 +149,9 @@ import os
     // MARK: - Private Helpers
     
     private func generateSuggestion(for taskTitle: String) async throws -> TaskSuggestion {
-        // Get relevant lists to narrow down AI context
         let filteredLists = reminderService.relevantLists(for: taskTitle)
         let listNames = filteredLists.map { $0.title }
-        
-        // Generate AI suggestion
+
         var suggestion = try await aiService.suggestTask(
             for: taskTitle,
             availableLists: listNames
@@ -202,7 +197,6 @@ import os
         let time = suggestion.dueTime
         if date.isEmpty && time.isEmpty { return nil }
         
-        // ✅ Use Date.FormatStyle instead of ISO8601DateFormatter hack
         let today = Date.now.formatted(.iso8601.year().month().day())
         let dateString = date.isEmpty ? today : date
         let timeString = time.isEmpty ? "00:00" : time

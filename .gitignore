@@ -115,4 +115,4 @@ dist/
 *.zip
 *.dmg
 .claude/settings.local.json
-CLAUDE.md
+Claude.md

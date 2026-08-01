@@ -11,7 +11,6 @@ struct LightningTaskPanelView: View {
     @FocusState private var isFocused: Bool
     @State private var showDatePicker = false
 
-    // Inversion of Control: Only the action, not the whole controller
     let onClose: () -> Void
     @Bindable var reminderViewModel: ReminderViewModel
 
@@ -28,18 +27,16 @@ struct LightningTaskPanelView: View {
                     .textFieldStyle(.plain)
                     .tint(.white)
                     .onAppear {
-                        // Reset when opening the panel
                         reminderViewModel.reset()
                         showDatePicker = false
-                        
-                        // Use Swift Concurrency instead of DispatchQueue hack
+
+                        // Small delay needed for the panel to settle before accepting focus
                         Task {
                             try? await Task.sleep(for: .milliseconds(100))
                             isFocused = true
                         }
                     }
                     .onKeyPress(.escape) {
-                        // Reset before closing
                         reminderViewModel.reset()
                         showDatePicker = false
                         onClose()
@@ -48,28 +45,23 @@ struct LightningTaskPanelView: View {
                     .onKeyPress(keys: [.return]) { keyPress in
                         let commandPressed = keyPress.modifiers.contains(.command)
 
-                            Task {
-                               let itemSaved = await reminderViewModel.saveCurrentItems()
-                                if itemSaved {
-                                    // Always reset, then decide whether to close
-                                    reminderViewModel.reset()
-                                    showDatePicker = false
-                                    
-                                    if !commandPressed {
-                                        // Normal Return → close
-                                        onClose()
-                                    }
-                                    // Cmd+Return → keep open for next input
+                        Task {
+                            let itemSaved = await reminderViewModel.saveCurrentItems()
+                            if itemSaved {
+                                reminderViewModel.reset()
+                                showDatePicker = false
+
+                                if !commandPressed {
+                                    onClose()
                                 }
                             }
-                            return .handled
+                        }
+                        return .handled
                     }
-                // Task is set through SwiftUI
                     .task(id: reminderViewModel.todo) {
                         await reminderViewModel.refreshSuggestion()
                     }
             }
-            // Use if let instead of optional chaining
             if let suggestion = reminderViewModel.suggestion {
                 Divider()
                 VStack {
@@ -96,9 +88,8 @@ struct LightningTaskPanelView: View {
                                         .padding()
                                 }
                             AlarmButton(alarmEnabled: $reminderViewModel.alarmEnabled)
-
                         }
-                        
+
                         Spacer()
                     }
                 }
@@ -117,4 +108,3 @@ struct LightningTaskPanelView: View {
         reminderViewModel: reminderViewModel
     )
 }
-

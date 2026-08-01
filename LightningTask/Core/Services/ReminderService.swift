@@ -19,8 +19,7 @@ import os
     private let logger = Logger(subsystem: "com.yourcompany.LightningTask", category: "ReminderService")
     
     // MARK: - Static Date Formatters
-    // ✅ Reuse formatters instead of creating new instances every time
-    
+
     private static let dateTimeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
@@ -86,7 +85,6 @@ import os
             let today = Date.now.formatted(.iso8601.year().month().day())
             let dateString = options.dueDate.isEmpty ? today : options.dueDate
             
-            // ✅ Use static formatters instead of creating new instances
             let formatter = hasTime ? Self.dateTimeFormatter : Self.dateOnlyFormatter
             let input = hasTime ? "\(dateString) \(options.dueTime)" : dateString
             if let date = formatter.date(from: input) {
@@ -104,7 +102,6 @@ import os
         
         do {
             logger.debug("\(String(localized: "alarms")): \(reminder.alarms ?? [])")
-            // ✅ store.save is synchronous, no await needed
             try store.save(reminder, commit: true)
         } catch {
             logger.error("\(String(localized: "failed_to_save_reminder")): \(options.text)")
@@ -136,10 +133,9 @@ import os
             }
             // Add first few lists as additional fallbacks (most likely to be used)
             fallbackLists.append(contentsOf: reminderLists.prefix(3))
-            return Array(Set(fallbackLists)) // Remove duplicates
+            return Array(Set(fallbackLists))
         }
         
-        // Top-Matches + immer Inbox als Fallback dabei
         var result = matches.prefix(5).map { $0.0 }
         let standardListTitle: String = store.defaultCalendarForNewReminders()?.title ?? ""
         if let defaultList = reminderLists.first(where: { $0.title == standardListTitle }),
