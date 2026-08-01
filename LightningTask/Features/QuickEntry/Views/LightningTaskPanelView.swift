@@ -64,7 +64,16 @@ struct LightningTaskPanelView: View {
             }
             if let suggestion = reminderViewModel.suggestion {
                 Divider()
-                VStack {
+                VStack(spacing: LayoutConstants.chipSpacing) {
+                    
+                    HStack(spacing: LayoutConstants.chipSpacing) {
+                        ForEach(suggestion.items, id: \.self) { item in
+                            ChipView(item: item, isSelected: false)
+                        }
+                        Spacer()
+                    }
+                    
+                    
                     HStack(spacing: LayoutConstants.chipSpacing) {
                         ForEach(suggestion.listNames, id: \.self) { item in
                             ChipView(item: item, isSelected: reminderViewModel.selected == item)
