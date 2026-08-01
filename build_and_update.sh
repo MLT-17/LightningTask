@@ -6,80 +6,61 @@ SCHEME_NAME="LightningTask"
 CONFIGURATION="Release"
 BUILD_DIR="./build"
 OUTPUT_DIR="./dist"
-SERVER_PORT=8080
+SERVER_PORT=8000
+PLIST_PATH="LightningTask/Info.plist"
+PRODUCTION_FEED_URL="https://raw.githubusercontent.com/MLT-17/LightningTask/main/appcast.xml"
+LOCAL_FEED_URL="http://localhost:${SERVER_PORT}/appcast.xml"
 
-echo "➔ 1. Bereinige alte Builds..."
+GENERATE_APPCAST_BIN=$(which generate_appcast 2>/dev/null || find /opt/homebrew/Caskroom/sparkle -name "generate_appcast" -print -quit 2>/dev/null)
+
+if [ -z "$GENERATE_APPCAST_BIN" ]; then
+    echo "Error: 'generate_appcast' not found. Install Sparkle via Homebrew."
+    exit 1
+fi
+
+# Restore production URL on exit (even on failure)
+trap '/usr/libexec/PlistBuddy -c "Set :SUFeedURL $PRODUCTION_FEED_URL" "$PLIST_PATH"' EXIT
+
+echo "→ 1. Patching SUFeedURL for local testing..."
+/usr/libexec/PlistBuddy -c "Set :SUFeedURL $LOCAL_FEED_URL" "$PLIST_PATH"
+
+echo "→ 2. Cleaning old builds..."
 rm -rf "$BUILD_DIR" "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-echo "➔ 2. Xcode Build..."
+echo "→ 3. Bumping build number and building..."
+xcrun agvtool next-version -all
+
 xcodebuild -project "${PROJECT_NAME}.xcodeproj" \
            -scheme "${SCHEME_NAME}" \
            -configuration "${CONFIGURATION}" \
            -derivedDataPath "$BUILD_DIR" \
            build
 
-BUILT_APP="${BUILD_DIR}/Build/Products/${CONFIGURATION}/${PROJECT_NAME}.app"
-
-echo "➔ 3. Erstelle ZIP-Archiv..."
+echo "→ 4. Creating ZIP archive..."
 ZIP_NAME="${PROJECT_NAME}.zip"
 cd "${BUILD_DIR}/Build/Products/${CONFIGURATION}"
 zip -ry "../../../../${OUTPUT_DIR}/${ZIP_NAME}" "${PROJECT_NAME}.app"
 cd - > /dev/null
 
-echo "➔ 4. Generiere appcast.xml via Python..."
-python3 - <<OPEOF
-import os
-import plistlib
-import xml.etree.ElementTree as ET
-from datetime import datetime
+echo "→ 5. Generating appcast.xml..."
+"$GENERATE_APPCAST_BIN" "$OUTPUT_DIR"
+cp "$OUTPUT_DIR/appcast.xml" "./appcast.xml" 2>/dev/null || cp "$OUTPUT_DIR/${PROJECT_NAME}.xml" "./appcast.xml" 2>/dev/null || true
 
-# Namensraum für Sparkle korrekt registrieren
-SPARKLE_NS = "http://andymatuschak.org"
-ET.register_namespace('sparkle', SPARKLE_NS)
+echo "→ 6. Restoring production URL..."
+/usr/libexec/PlistBuddy -c "Set :SUFeedURL $PRODUCTION_FEED_URL" "$PLIST_PATH"
+trap - EXIT
 
-app_path = "${BUILT_APP}"
-info_plist_path = os.path.join(app_path, "Contents", "Info.plist")
-zip_path = os.path.join("${OUTPUT_DIR}", "${ZIP_NAME}")
+echo "========================================="
+echo "Done. Starting local server on port $SERVER_PORT..."
+echo "Press Ctrl+C to stop."
+echo "========================================="
 
-# Versionsdaten auslesen
-with open(info_plist_path, 'rb') as f:
-    plist = plistlib.load(f)
-version = plist.get("CFBundleShortVersionString", "1.0")
-build_num = plist.get("CFBundleVersion", "1")
-zip_size = os.path.getsize(zip_path)
-pub_date = datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0100")
-
-# XML Struktur aufbauen
-rss = ET.Element("rss", version="2.0")
-channel = ET.SubElement(rss, "channel")
-ET.SubElement(channel, "title").text = "${PROJECT_NAME} Updates"
-
-item = ET.SubElement(channel, "item")
-ET.SubElement(item, "title").text = f"Version {version}"
-ET.SubElement(item, "pubDate").text = pub_date
-
-# Attribute mit dem registrierten Namensraum setzen
-enclosure = ET.SubElement(item, "enclosure", 
-                        url=f"http://localhost:${SERVER_PORT}/${ZIP_NAME}",
-                        length=str(zip_size),
-                        type="application/zip")
-enclosure.set(f"{{{SPARKLE_NS}}}version", build_num)
-enclosure.set(f"{{{SPARKLE_NS}}}shortVersionString", version)
-
-# XML speichern
-tree = ET.ElementTree(rss)
-ET.indent(tree, space="    ")
-tree.write(os.path.join("${OUTPUT_DIR}", "appcast.xml"), encoding="utf-8", xml_declaration=True)
-print("➔ appcast.xml erfolgreich generiert!")
-OPEOF
-
-cp "${OUTPUT_DIR}/appcast.xml" "./appcast.xml"
-
-echo "================================================="
-echo " 🎉 Fertig! Möchtest du den Python-Server auf Port ${SERVER_PORT} starten? (y/n)"
-echo "================================================="
-read -r response
-if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-    python3 -m http.server ${SERVER_PORT} --directory "$OUTPUT_DIR"
+OLD_PID=$(lsof -t -i:$SERVER_PORT || true)
+if [ -n "$OLD_PID" ]; then
+    echo "Port $SERVER_PORT in use (PID: $OLD_PID). Killing..."
+    kill -9 $OLD_PID 2>/dev/null || true
+    sleep 1
 fi
+
+python3 -m http.server $SERVER_PORT --directory "$OUTPUT_DIR"

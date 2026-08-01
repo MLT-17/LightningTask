@@ -10,15 +10,18 @@ import SwiftUI
 
 @main
 struct LightningTaskApp: App {
-    let panelController = LightningTaskPanelController()
+    private let reminderViewModel = ReminderViewModel()
+    private let panelController: LightningTaskPanelController
+    
     let hotKey = HotKey(key: .space, modifiers: [.control])
     
     
     init () {
+        panelController = LightningTaskPanelController(reminderViewModel: reminderViewModel)
+
         hotKey.keyDownHandler = { [panelController] in
             panelController.toggle()
         }
-        // try to autologin on startup
         try? SMAppService.mainApp.register()
     }
     
