@@ -4,6 +4,8 @@
 
 LightningTask provides a floating panel accessible via global hotkey (⌃Space) to quickly create reminders. Powered by Foundation Models (Apple Intelligence), it automatically suggests the best reminder list, extracts dates/times, and handles multiple tasks at once.
 
+![Demo](Screenshots/demo.gif)
+
 ## ✨ Features
 
 - **🎯 Global Hotkey Access**: Press ⌃Space from anywhere to open the quick-entry panel
@@ -66,15 +68,15 @@ LightningTask/
 
 ### Prerequisites
 
-- macOS 15.0 Sequoia or later
-- Xcode 16.0 or later
+- macOS 26.0 or later
+- Xcode 26.0 or later
 - Apple Intelligence enabled (for AI features)
 
 ### Building
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/LightningTask.git
+git clone https://github.com/MLT-17/LightningTask.git
 cd LightningTask
 ```
 
@@ -133,35 +135,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-[Your chosen license, e.g., MIT]
+MIT
 
 ## 🙏 Acknowledgments
 
 - Built with Swift and SwiftUI
 - Powered by Apple Intelligence (Foundation Models)
 - Uses [Sparkle](https://sparkle-project.org/) for updates
-
-### HotKey Implementation
-
-This project includes a **vendored copy** of [HotKey by Sam Soffes](https://github.com/soffes/HotKey) instead of using it as an SPM dependency.
-
-**Reasons for vendoring:**
-1. **Minimal dependencies**: HotKey is a small, stable library (~200 LOC) that rarely changes
-2. **Build reliability**: Eliminates external dependency resolution issues
-3. **Customization**: Allows project-specific modifications if needed (e.g., added `isPaused` property)
-4. **No maintenance burden**: The library is feature-complete and doesn't require frequent updates
-5. **Reduced build complexity**: One less external dependency to manage in CI/CD
-
-The vendored version includes the core HotKey functionality with our modifications:
-- Added `isPaused` property for temporarily disabling hotkeys
-- Maintained compatibility with modern Swift and macOS versions
-
-**Credit**: Original HotKey library by [Sam Soffes](https://github.com/soffes), MIT License
-
-## 📮 Contact
-
-[Your contact information or links]
-
 ---
 
-**Note**: Apple Intelligence features require macOS 15.0 Sequoia or later and may not be available in all regions.
+**Note**: Apple Intelligence features require macOS 26.0 or later and may not be available in all regions.

@@ -5,18 +5,18 @@
   German localization
 */
 
-// MARK: - Main UI
+// **MARK: - Main UI**
 "new_task_placeholder" = "Neue Aufgabe";
 "date_picker_label" = "Datum";
 
-// MARK: - Status Messages
+// **MARK: - Status Messages**
 "reminder_access_granted" = "✅ Erinnerungszugriff gewährt";
 "reminder_access_denied" = "❌ Erinnerungszugriff verweigert";
 "model_available" = "📋 Modell verfügbar";
 "failed_to_save" = "❌ Speichern der Erinnerungen fehlgeschlagen";
 "failed_to_generate_suggestion" = "⚠️ Vorschlag konnte nicht generiert werden";
 
-// MARK: - Debug/Logging
+// **MARK: - Debug/Logging**
 "raw_ai_list_names" = "🤖 KI-Rohdaten Listennamen";
 "after_snap" = "📍 Nach Snap";
 "token_candidates" = "🎯 Token-Kandidaten";
