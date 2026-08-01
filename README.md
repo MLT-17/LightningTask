@@ -91,6 +91,9 @@ cd LightningTask
 3. Press ⌃Space to open the quick-entry panel
 4. Right-click the menu bar icon for settings
 
+> **Note:** The app is not notarized (no Apple Developer account). On first launch,
+> macOS may block it. To open: right-click the app → **Open** → **Open** again.
+
 ## 📖 Usage
 
 ### Basic Usage
