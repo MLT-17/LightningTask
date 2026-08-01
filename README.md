@@ -144,6 +144,27 @@ chmod +x build_and_update.sh   # first time only
 3. In the running app: right-click the menu bar icon → **Check for Updates…**
 4. Press **Ctrl+C** to stop the server when done
 
+## 🗺️ Roadmap
+
+**✅ Shipped**
+- Menu bar app with global hotkey + Spotlight-style floating panel
+- Reminders/EventKit integration — create, multi-task input, race-condition-safe saving
+- On-device AI (Apple Foundation Models): list suggestion, date/time parsing, alarm handling
+- Auto-update infrastructure (Sparkle), local signed build pipeline
+
+**🔨 Up next**
+- Editable item chips — correct or remove extracted tasks before saving
+- Settings panel (default list, configurable hotkey)
+- Developer ID signing & notarization — enables Sparkle production updates and removes Gatekeeper friction
+- GitHub Actions release workflow — automated build, sign, and publish on version tag
+
+**📋 Planned**
+- Voice input (Speech framework)
+- Remaining polish (drag handle, menu bar status icon, animations, accessibility)
+- More languages — currently English and German; open to contributions
+- iOS target (shared ViewModel/business logic, widget)
+- watchOS target (complications, Siri voice capture)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
