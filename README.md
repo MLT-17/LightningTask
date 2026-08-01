@@ -62,7 +62,7 @@ LightningTask/
 - **EventKit** for Reminders integration
 - **Foundation Models** (Apple Intelligence) for AI suggestions
 - **AppKit** for global hotkey and floating panel
-- **Sparkle** for automatic updates
+- **Sparkle** for automatic updates — integrated and locally testable via `build_and_update.sh`; prepared for production release with Developer ID signing
 
 ## 🚀 Getting Started
 

@@ -7,20 +7,28 @@ CONFIGURATION="Release"
 BUILD_DIR="./build"
 OUTPUT_DIR="./dist"
 SERVER_PORT=8000
+PLIST_PATH="LightningTask/Info.plist"
+PRODUCTION_FEED_URL="https://raw.githubusercontent.com/MLT-17/LightningTask/main/appcast.xml"
+LOCAL_FEED_URL="http://localhost:${SERVER_PORT}/appcast.xml"
 
-# Dynamisch das installierte Sparkle-Tool auf dem Mac finden
-GENERATE_APPCAST_BIN=$(which generate_appcast || find /opt/homebrew/Caskroom/sparkle -name "generate_appcast" -print -quit 2>/dev/null)
+GENERATE_APPCAST_BIN=$(which generate_appcast 2>/dev/null || find /opt/homebrew/Caskroom/sparkle -name "generate_appcast" -print -quit 2>/dev/null)
 
 if [ -z "$GENERATE_APPCAST_BIN" ]; then
-    echo "❌ Fehler: 'generate_appcast' wurde nicht gefunden. Bitte installiere Sparkle via Homebrew."
+    echo "Error: 'generate_appcast' not found. Install Sparkle via Homebrew."
     exit 1
 fi
 
-echo "➔ 1. Bereinige alte Builds..."
+# Restore production URL on exit (even on failure)
+trap '/usr/libexec/PlistBuddy -c "Set :SUFeedURL $PRODUCTION_FEED_URL" "$PLIST_PATH"' EXIT
+
+echo "→ 1. Patching SUFeedURL for local testing..."
+/usr/libexec/PlistBuddy -c "Set :SUFeedURL $LOCAL_FEED_URL" "$PLIST_PATH"
+
+echo "→ 2. Cleaning old builds..."
 rm -rf "$BUILD_DIR" "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
-echo "➔ 2. Erhöhe Build-Nummer und starte Xcode Build..."
+echo "→ 3. Bumping build number and building..."
 xcrun agvtool next-version -all
 
 xcodebuild -project "${PROJECT_NAME}.xcodeproj" \
@@ -29,32 +37,30 @@ xcodebuild -project "${PROJECT_NAME}.xcodeproj" \
            -derivedDataPath "$BUILD_DIR" \
            build
 
-BUILT_APP="${BUILD_DIR}/Build/Products/${CONFIGURATION}/${PROJECT_NAME}.app"
-
-echo "➔ 3. Erstelle ZIP-Archiv..."
+echo "→ 4. Creating ZIP archive..."
 ZIP_NAME="${PROJECT_NAME}.zip"
 cd "${BUILD_DIR}/Build/Products/${CONFIGURATION}"
 zip -ry "../../../../${OUTPUT_DIR}/${ZIP_NAME}" "${PROJECT_NAME}.app"
 cd - > /dev/null
 
-echo "➔ 4. Generiere korrekte appcast.xml via Sparkle Tool..."
+echo "→ 5. Generating appcast.xml..."
 "$GENERATE_APPCAST_BIN" "$OUTPUT_DIR"
-
-# Kopiere die generierte XML ins Hauptverzeichnis für Git
 cp "$OUTPUT_DIR/appcast.xml" "./appcast.xml" 2>/dev/null || cp "$OUTPUT_DIR/${PROJECT_NAME}.xml" "./appcast.xml" 2>/dev/null || true
 
-echo "================================================="
-echo " 🎉 Fertig! Überprüfe und starte Python-Server..."
-echo "================================================="
+echo "→ 6. Restoring production URL..."
+/usr/libexec/PlistBuddy -c "Set :SUFeedURL $PRODUCTION_FEED_URL" "$PLIST_PATH"
+trap - EXIT
 
-# Da der LaunchAgent jetzt weg ist, killt das hier zuverlässig alte Reste
+echo "========================================="
+echo "Done. Starting local server on port $SERVER_PORT..."
+echo "Press Ctrl+C to stop."
+echo "========================================="
+
 OLD_PID=$(lsof -t -i:$SERVER_PORT || true)
-if [ ! -z "$OLD_PID" ]; then
-    echo "➔ Port $SERVER_PORT ist belegt (PID: $OLD_PID). Beende alten Prozess..."
+if [ -n "$OLD_PID" ]; then
+    echo "Port $SERVER_PORT in use (PID: $OLD_PID). Killing..."
     kill -9 $OLD_PID 2>/dev/null || true
     sleep 1
 fi
 
-echo "➔ Starte Python-Server auf Port $SERVER_PORT..."
-echo " Drücke STRG+C zum Beenden des Servers."
 python3 -m http.server $SERVER_PORT --directory "$OUTPUT_DIR"
