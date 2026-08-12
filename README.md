@@ -62,7 +62,7 @@ LightningTask/
 - **EventKit** for Reminders integration
 - **Foundation Models** (Apple Intelligence) for AI suggestions
 - **AppKit** for global hotkey and floating panel
-- **Sparkle** for automatic updates — integrated and locally testable via `build_and_update.sh`; prepared for production release with Developer ID signing
+- **Sparkle** for automatic updates. Integrated and locally testable via `build_and_update.sh`; prepared for production release with Developer ID signing
 
 ## 🚀 Getting Started
 
@@ -136,7 +136,7 @@ brew install --cask sparkle
 
 **Steps:**
 1. Make sure a previous version of the app is already running (the one that will *receive* the update)
-2. Run the script — it bumps the build number, builds a new release, and starts the server:
+2. Run the script. It bumps the build number, builds a new release, and starts the server:
 ```bash
 chmod +x build_and_update.sh   # first time only
 ./build_and_update.sh
@@ -148,20 +148,20 @@ chmod +x build_and_update.sh   # first time only
 
 **✅ Shipped**
 - Menu bar app with global hotkey + Spotlight-style floating panel
-- Reminders/EventKit integration — create, multi-task input, race-condition-safe saving
+- Reminders/EventKit integration: create, multi-task input, race-condition-safe saving
 - On-device AI (Apple Foundation Models): list suggestion, date/time parsing, alarm handling
 - Auto-update infrastructure (Sparkle), local signed build pipeline
 
 **🔨 Up next**
-- Editable item chips — correct or remove extracted tasks before saving
+- Editable item chips: correct or remove extracted tasks before saving
 - Settings panel (default list, configurable hotkey)
-- Developer ID signing & notarization — enables Sparkle production updates and removes Gatekeeper friction
-- GitHub Actions release workflow — automated build, sign, and publish on version tag
+- Developer ID signing & notarization: enables Sparkle production updates and removes Gatekeeper friction
+- GitHub Actions release workflow: automated build, sign, and publish on version tag
 
 **📋 Planned**
 - Voice input (Speech framework)
 - Remaining polish (drag handle, menu bar status icon, animations, accessibility)
-- More languages — currently English and German; open to contributions
+- More languages, currently English and German; open to contributions
 - iOS target (shared ViewModel/business logic, widget)
 - watchOS target (complications, Siri voice capture)
 
