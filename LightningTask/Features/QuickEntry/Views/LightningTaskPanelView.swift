@@ -87,15 +87,21 @@ struct LightningTaskPanelView: View {
                     HStack {
                         let dateString = reminderViewModel.suggestedDateString(for: suggestion)
                         if !dateString.isEmpty {
-                            ChipView(item: dateString, isSelected: false)
-                                .onTapGesture {
-                                    showDatePicker.toggle()
-                                }
-                                .popover(isPresented: $showDatePicker, arrowEdge: .bottom) {
-                                    DatePicker(String(localized: "date_picker_label"), selection: $reminderViewModel.selectedDate)
-                                        .datePickerStyle(.stepperField)
-                                        .padding()
-                                }
+                            EditableChipView(item: dateString, isSelected: false)
+//                                .onTapGesture {
+//                                    showDatePicker.toggle()
+//                                }
+//                                .popover(isPresented: $showDatePicker, arrowEdge: .bottom) {
+//                                    DatePicker(String(localized: "date_picker_label"), selection: $reminderViewModel.selectedDate)
+//                                        .datePickerStyle(.stepperField)
+//                                        .padding()
+//                                        
+//                                }
+                            let timeString = reminderViewModel.suggestedTimeString(for: suggestion)
+                            if !timeString.isEmpty {
+                                ChipView(item: timeString, isSelected: false)
+                            }
+                            
                             AlarmButton(alarmEnabled: $reminderViewModel.alarmEnabled)
                         }
 
