@@ -4,12 +4,12 @@
         <title>LightningTask</title>
         <item>
             <title>0.3</title>
-            <pubDate>Sat, 04 Jul 2026 12:17:42 +0200</pubDate>
-            <sparkle:version>10</sparkle:version>
+            <pubDate>Tue, 25 Aug 2026 22:07:17 +0200</pubDate>
+            <sparkle:version>13</sparkle:version>
             <sparkle:shortVersionString>0.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://github.com/MLT-17/LightningTask/releases/download/v0.3/LightningTask.zip" length="6477345" type="application/octet-stream" sparkle:edSignature="GH8I1tnGSWTW4AyIXr5bUbNN53Ht2exHgaDlSsaxXuzhnO8/L84gghdH00RACIqJ/V988HsVB8P1rwelpsd5CA=="/>
+            <enclosure url="http://localhost:8000/LightningTask.zip" length="6481502" type="application/octet-stream" sparkle:edSignature="r3FchqzKU91HQGBkUtfe8srgbDEsOM+Bl2oxBh115k9h2osdjMm8Z6oI70fFRWCOJS5goec+zgN9DepVbRCNDA=="/>
         </item>
     </channel>
 </rss>

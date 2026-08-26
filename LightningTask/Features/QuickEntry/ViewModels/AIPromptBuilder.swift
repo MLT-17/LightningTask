@@ -99,6 +99,9 @@ struct AIPromptBuilder {
         "metaLOG ios weitermachen" → items: ["weitermachen"], listNames: ["metaLOG iOS/Mac"], dueDate: "", dueTime: "" ← eindeutig, "ios" passt nur zu einer Liste
         "metalog weitermachen" → items: ["weitermachen"], listNames: ["metaLOG", "metaLOG iOS/Mac", "metaLOG Electron"], dueDate: "", dueTime: "" ← mehrdeutig, kein Disambiguator
         "Einkaufen 12:00" → items: ["Einkaufen"], listNames: ["Einkäufe"], dueDate: "\(today)", dueTime: "12:00" ← Nur Uhrzeit genannt → Datum automatisch heute
+        "Meeting am 12.12" → items: ["Meeting"], listNames: ["Privat", "Inbox"], dueDate: "2026-12-12", dueTime: "" ← Numerisches Datum dd.MM erkannt, Jahr aus Kontext
+                "Meeting am 12.12." → items: ["Meeting"], listNames: ["Privat", "Inbox"], dueDate: "2026-12-12", dueTime: "" ← Numerisches Datum dd.MM erkannt, Jahr aus Kontext
+        "Zahnarzt 15.09.26 10:30" → items: ["Zahnarzt"], listNames: ["Privat", "Inbox"], dueDate: "2026-09-15", dueTime: "10:30" ← Numerisches Datum mit Kurzjahr
         
         TASK:
         "\(taskTitle)"
@@ -156,6 +159,9 @@ struct AIPromptBuilder {
         "Planning in metanoy General tomorrow 8am" → items: ["Planning"], listNames: ["metanoy General"], dueDate: "\(tomorrow)", dueTime: "08:00"
         "3 bananas, 4x yogurt" → items: ["3 bananas", "4x yogurt"], listNames: ["Shopping"], dueDate: "", dueTime: ""
         "Shopping 12:00" → items: ["Shopping"], listNames: ["Shopping"], dueDate: "\(today)", dueTime: "12:00" ← Only time mentioned → date is today
+        "Meeting on 12.12" → items: ["Meeting"], listNames: ["Personal", "Inbox"], dueDate: "2026-12-12", dueTime: "" ← Numerical date dd.MM recognized, year from context
+        "Meeting on 12.12." → items: ["Meeting"], listNames: ["Personal", "Inbox"], dueDate: "2026-12-12", dueTime: "" ← Numerical date dd.MM recognized, year from context
+        "Dentist 15.09.26 10:30" → items: ["Dentist"], listNames: ["Personal", "Inbox"], dueDate: "2026-09-15", dueTime: "10:30" ← Numerical date with short year
         
         TASK:
         "\(taskTitle)"
