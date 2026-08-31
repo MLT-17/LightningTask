@@ -62,7 +62,7 @@ LightningTask/
 - **EventKit** for Reminders integration
 - **Foundation Models** (Apple Intelligence) for AI suggestions
 - **AppKit** for global hotkey and floating panel
-- **Sparkle** for automatic updates. Integrated and locally testable via `build_and_update.sh`; prepared for production release with Developer ID signing
+- **Sparkle** for automatic updates. Integrated and locally testable via `build_and_update.sh`; signed and notarized for production release with a Developer ID certificate
 
 ## 🚀 Getting Started
 
@@ -91,8 +91,13 @@ cd LightningTask
 3. Press ⌃Space to open the quick-entry panel
 4. Right-click the menu bar icon for settings
 
-> **Note:** The app is not notarized (no Apple Developer account). On first launch,
-> macOS may block it. To open: right-click the app → **Open** → **Open** again.
+> **Note:** The app is signed and notarized with a Developer ID certificate. macOS will open it without Gatekeeper warnings.
+
+## 📥 Download
+
+Download the latest release as a DMG from the [Releases page](https://github.com/MLT-17/LightningTask/releases).
+
+Mount the DMG and drag **LightningTask.app** into `/Applications` (or `~/Applications`). No further setup needed — the app launches from the menu bar on next open.
 
 ## 📖 Usage
 
@@ -127,12 +132,13 @@ xcodebuild test -scheme LightningTask
 ### Testing Sparkle Updates Locally
 
 `build_and_update.sh` builds a release, signs the appcast, and serves it on
-`localhost:8000` so you can test the full update flow without a Developer ID certificate.
+`localhost:8000` so you can test the full update flow locally before publishing a release.
 
-**Requirement:** `generate_appcast` from the Sparkle Homebrew cask:
-```bash
-brew install --cask sparkle
+**Requirement:** `generate_appcast` — available via the Sparkle SPM dependency already in the project, no separate install needed:
 ```
+build/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast
+```
+The exact path depends on your `-derivedDataPath` setting; look under `SourcePackages/artifacts/sparkle/Sparkle/bin/` in your derived data directory.
 
 **Steps:**
 1. Make sure a previous version of the app is already running (the one that will *receive* the update)
@@ -150,12 +156,11 @@ chmod +x build_and_update.sh   # first time only
 - Menu bar app with global hotkey + Spotlight-style floating panel
 - Reminders/EventKit integration: create, multi-task input, race-condition-safe saving
 - On-device AI (Apple Foundation Models): list suggestion, date/time parsing, alarm handling
-- Auto-update infrastructure (Sparkle), local signed build pipeline
+- Auto-update infrastructure (Sparkle) with Developer ID signing & notarization
 
 **🔨 Up next**
 - Editable item chips: correct or remove extracted tasks before saving
 - Settings panel (default list, configurable hotkey)
-- Developer ID signing & notarization: enables Sparkle production updates and removes Gatekeeper friction
 - GitHub Actions release workflow: automated build, sign, and publish on version tag
 
 **📋 Planned**
