@@ -165,10 +165,6 @@ chmod +x build_and_update.sh   # first time only
 - iOS target (shared ViewModel/business logic, widget)
 - watchOS target (complications, Siri voice capture)
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ### Development Guidelines
 
 1. Follow Swift API Design Guidelines
@@ -177,9 +173,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Document public APIs with DocC-style comments
 5. Use structured concurrency (async/await) over legacy patterns
 
-## 📄 License
+## License
 
-MIT
+All rights reserved. This repository is public for portfolio and demonstration purposes 
+only — the source code is not licensed for use, copying, modification, or distribution 
+without explicit permission. See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
