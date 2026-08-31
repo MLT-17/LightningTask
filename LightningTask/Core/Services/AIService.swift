@@ -51,6 +51,13 @@ actor AIService {
             generating: TaskSuggestion.self
         )
         
-        return response.content
+        var suggestion = response.content
+        // Post-processing: set date as today if only time is set
+        if !suggestion.dueTime.isEmpty && suggestion.dueDate.isEmpty {
+            suggestion.dueDate = today
+        }
+
+        
+        return suggestion
     }
 }

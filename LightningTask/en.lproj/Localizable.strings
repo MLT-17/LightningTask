@@ -9,6 +9,14 @@
 "new_task_placeholder" = "New Task";
 "date_picker_label" = "Date";
 
+// MARK: - Chips
+"chip_no_date" = "No Date";
+"chip_no_time" = "No Time";
+
+// MARK: - Context Menu
+"menu_check_for_updates" = "Check for Updates…";
+"menu_quit" = "Quit LightningTask";
+
 // MARK: - Status Messages
 "reminder_access_granted" = "✅ Reminder access granted";
 "reminder_access_denied" = "❌ Reminder access denied";

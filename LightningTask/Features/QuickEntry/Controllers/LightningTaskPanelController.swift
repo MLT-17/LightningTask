@@ -75,14 +75,14 @@ class LightningTaskPanelController {
         menu.addItem(NSMenuItem.separator())
 
         let updateItem = NSMenuItem(
-            title: "Check for Updates…",
+            title: String(localized: "menu_check_for_updates"),
             action: #selector(checkForUpdates),
             keyEquivalent: ""
         )
         updateItem.target = self
         menu.addItem(updateItem)
 
-        let quitItem = NSMenuItem(title: "Quit LightningTask", action: #selector(quit), keyEquivalent: "")
+        let quitItem = NSMenuItem(title: String(localized: "menu_quit"), action: #selector(quit), keyEquivalent: "")
         quitItem.target = self
         menu.addItem(quitItem)
 

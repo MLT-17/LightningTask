@@ -83,23 +83,26 @@ import os
         isSaving = true
         defer { isSaving = false }
         
-        do {
-            let items = suggestion?.items ?? [todo]
-            for item in items {
-                let options = ReminderService.ReminderOptions(
-                    text: item,
-                    listName: selected ?? "",
-                    dueDate: suggestion?.dueDate ?? "",
-                    dueTime: suggestion?.dueTime ?? "",
-                    alarmEnabled: alarmEnabled
-                )
+        let items = suggestion?.items ?? [todo]
+        
+        var didCompleteSaving = true
+        
+        for item in items {
+            let options = ReminderService.ReminderOptions(
+                text: item,
+                listName: selected ?? "",
+                dueDate: suggestion?.dueDate ?? "",
+                dueTime: suggestion?.dueTime ?? "",
+                alarmEnabled: alarmEnabled
+            )
+            do {
                 try reminderService.createReminder(options: options)
+            } catch {
+                logger.error("❌ Failed to save reminder: \(error)")
+                didCompleteSaving = false
             }
-            return true
-        } catch {
-            logger.error("❌ Failed to save reminders: \(error)")
-            return false
         }
+        return didCompleteSaving
     }
     
     /// Refreshes AI suggestions for the current `todo` text
@@ -112,6 +115,7 @@ import os
         
         do {
             suggestion = try await generateSuggestion(for: todo)
+            logger.debug("📅 Raw AI dueDate: '\(self.suggestion?.dueDate ?? "nil")'")  
             selected = suggestion?.listNames.first
             alarmEnabled = true
         } catch {
@@ -129,21 +133,30 @@ import os
     
     // MARK: - Date Handling
     
+    private let dateParser = DateParser()
+    
     /// Two-way binding for the suggested date
     /// Get: parsed date (or now if none). Set: updates dueDate/dueTime in suggestion
-    var selectedDate: Date {
-        get { parseDateFromSuggestion() ?? .now }
+    var selectedDateText: String {
+        get { suggestedDateString()}
         set { updateSuggestionDate(newValue) }
+        
+    }
+    
+    var selectedTimeText: String {
+        get { suggestedTimeString()}
+        set { updateSuggestionTime(newValue) }
     }
     
     /// Returns a formatted string for the suggested date/time
-    func suggestedDateString(for suggestion: TaskSuggestion?) -> String {
+    func suggestedDateString() -> String {
         guard let date = parseDateFromSuggestion() else { return "" }
-        let hasTime = !(suggestion?.dueTime.isEmpty ?? true)
-        let display = DateFormatter()
-        display.dateFormat = hasTime ? "EE, d. MMM · HH:mm" : "EE, d. MMM"
-        display.locale = Locale(identifier: "de_DE")
-        return display.string(from: date)
+        return dateParser.displayDateString(from: date)
+    }
+    
+    func suggestedTimeString() -> String {
+        guard let time = parseTimeFromSuggestion() else { return "" }
+        return dateParser.displayTimeString(from: time)
     }
     
     // MARK: - Private Helpers
@@ -151,7 +164,7 @@ import os
     private func generateSuggestion(for taskTitle: String) async throws -> TaskSuggestion {
         let filteredLists = reminderService.relevantLists(for: taskTitle)
         let listNames = filteredLists.map { $0.title }
-
+        
         var suggestion = try await aiService.suggestTask(
             for: taskTitle,
             availableLists: listNames
@@ -182,8 +195,8 @@ import os
         }
         
         // Always include system default list as fallback
-        let defaultListName = reminderService.defaultList()?.title 
-            ?? AppConfiguration.shared.fallbackListName
+        let defaultListName = reminderService.defaultList()?.title
+        ?? AppConfiguration.shared.fallbackListName
         if !suggestion.listNames.contains(defaultListName) {
             suggestion.listNames.append(defaultListName)
         }
@@ -192,31 +205,52 @@ import os
     }
     
     private func parseDateFromSuggestion() -> Date? {
-        guard let suggestion = suggestion else { return nil }
-        let date = suggestion.dueDate
-        let time = suggestion.dueTime
-        if date.isEmpty && time.isEmpty { return nil }
+        guard let suggestion = suggestion, !suggestion.dueDate.isEmpty else { return nil }
         
-        let today = Date.now.formatted(.iso8601.year().month().day())
-        let dateString = date.isEmpty ? today : date
-        let timeString = time.isEmpty ? "00:00" : time
-        
-        let parser = DateFormatter()
-        parser.dateFormat = "yyyy-MM-dd HH:mm"
-        return parser.date(from: "\(dateString) \(timeString)")
+        return dateParser.parseStorageDate(suggestion.dueDate)
     }
     
-    private func updateSuggestionDate(_ newValue: Date) {
-        guard var s = suggestion else { return }
+    private func parseTimeFromSuggestion() -> Date? {
+        guard let suggestion = suggestion, !suggestion.dueTime.isEmpty else { return nil }
+           return dateParser.parseStorageTime(suggestion.dueTime)
+    }
+    
+    private func updateSuggestionDate(_ newValue: String) {
+        guard var suggestion = suggestion else { return }
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        s.dueDate = dateFormatter.string(from: newValue)
+        if newValue == "" {
+            suggestion.dueDate = ""
+            suggestion.dueTime = ""
+            self.suggestion = suggestion
+            return
+        }
         
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        s.dueTime = timeFormatter.string(from: newValue)
+        if let date = dateParser.parseDate(newValue, formats: dateFormats) {
+            let dateString = dateParser.storageDateString(from: date)
+            suggestion.dueDate = dateString
+            self.suggestion = suggestion
+        }
+    }
+    
+    private func updateSuggestionTime(_ newValue: String) {
+        guard var suggestion = suggestion else { return }
         
-        suggestion = s
+        if newValue == "" {
+            suggestion.dueTime = ""
+            self.suggestion = suggestion
+            return
+        }
+        
+        if let time = dateParser.parseTime(newValue, formats: timeFormats) {
+            let timeString = dateParser.storageTimeString(from: time)
+            
+            // if no date yet, set to today
+            if suggestion.dueDate.isEmpty {
+                suggestion.dueDate = dateParser.storageDateString(from: Date.now)
+            }
+            
+            suggestion.dueTime = timeString
+            self.suggestion = suggestion
+        }
     }
 }

@@ -94,7 +94,7 @@ extension AppConfiguration {
         suggestionDebounceMilliseconds: Int = 500,
         minimumCharactersForSuggestion: Int = 2
     ) -> AppConfiguration {
-        var config = AppConfiguration()
+        let config = AppConfiguration()
         return config
     }
 }
