@@ -1,27 +1,16 @@
 name: Build, Sign, Notarize & Release
 
-# Vorerst manuell auslösbar (Button in der Actions-Oberfläche).
-# Sobald der Ablauf zuverlässig läuft, umstellen auf:
-#
-# on:
-#   push:
-#     tags:
-#       - "v*"
-#
-# Achtung dabei: Dieser Workflow erzeugt selbst einen Tag (via `gh release
-# create`). Bei Tag-Trigger würde das theoretisch einen zweiten Lauf für den
-# frisch erzeugten Tag anstoßen — der bricht dann aber sofort beim
-# "Guard against un-bumped version"-Schritt ab, weil der Release ja schon
-# existiert. Kein Endlos-Loop, aber ein unnötiger Zusatzlauf, den man auf dem
-# Radar haben sollte.
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
 
 jobs:
   release:
     runs-on: macos-latest
     permissions:
-      contents: write # nötig für: GitHub Release erstellen, appcast.xml zurückpushen
+      contents: write
     env:
       GH_TOKEN: ${{ github.token }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -30,9 +19,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------------
-      # 1. Signing-Zertifikat in eine frische, temporäre Keychain importieren
-      # ---------------------------------------------------------------
+      # --- Signing & Notarization Setup -------------------------------
+
       - name: Import Developer ID certificate
         env:
           CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
@@ -50,9 +38,6 @@ jobs:
           security import "$RUNNER_TEMP/certificate.p12" \
             -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
 
-          # Erlaubt codesign/notarytool Zugriff auf den privaten Schlüssel,
-          # ohne dass ein Passwort-Prompt aufpoppt (der in CI ja niemand
-          # bestätigen könnte).
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
             -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
@@ -62,9 +47,6 @@ jobs:
 
           rm "$RUNNER_TEMP/certificate.p12"
 
-      # ---------------------------------------------------------------
-      # 2. Notarization-Credentials für notarytool hinterlegen
-      # ---------------------------------------------------------------
       - name: Set up notarization credentials
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -79,9 +61,8 @@ jobs:
             --key-id "$ASC_KEY_ID" \
             --issuer "$ASC_ISSUER_ID"
 
-      # ---------------------------------------------------------------
-      # 3. Signierter Release-Build
-      # ---------------------------------------------------------------
+      # --- Build -----------------------------------------------------------
+
       - name: Build (Release)
         run: |
           xcodebuild \
@@ -95,11 +76,6 @@ jobs:
             CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
             clean build
 
-      # ---------------------------------------------------------------
-      # 4. Version auslesen + Sicherheitscheck: wurde sie tatsächlich
-      #    hochgezählt? (Genau die Falle, in die wir manuell reingelaufen
-      #    sind: Build lief mit alter, nicht wirklich gebumpter Version.)
-      # ---------------------------------------------------------------
       - name: Read version & guard against un-bumped release
         id: version
         run: |
@@ -108,34 +84,27 @@ jobs:
           BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST")
           TAG="v${VERSION}"
 
-          echo "Gebauter Stand: Version $VERSION, Build $BUILD, Tag $TAG"
+          echo "Building version $VERSION (build $BUILD), tag $TAG"
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "build=$BUILD" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "::error::Release $TAG existiert bereits auf GitHub. MARKETING_VERSION/CURRENT_PROJECT_VERSION in Xcode vor dem nächsten Lauf hochzählen und pushen."
+            echo "::error::Release $TAG already exists. Bump MARKETING_VERSION/CURRENT_PROJECT_VERSION before running this workflow again."
             exit 1
           fi
 
-      # ---------------------------------------------------------------
-      # 5. Entitlements-Check: kein get-task-allow (sonst schlägt
-      #    Notarization garantiert fehl, lieber früh abbrechen)
-      # ---------------------------------------------------------------
       - name: Verify entitlements
         run: |
           APP="build/Build/Products/Release/LightningTask.app"
           if codesign -d --entitlements :- "$APP" 2>&1 | grep -q "get-task-allow"; then
-            echo "::error::get-task-allow in den Entitlements gefunden — CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO wurde nicht korrekt angewendet."
+            echo "::error::get-task-allow found in entitlements — CODE_SIGN_INJECT_BASE_ENTITLEMENTS not applied correctly."
             exit 1
           fi
-          echo "Entitlements sauber, kein get-task-allow."
 
-      # ---------------------------------------------------------------
-      # 6. Nested Signing: verschachtelte Sparkle-Binaries nachsignieren
-      #    (von innen nach außen, siehe release-konzepte.md Abschnitt 7)
-      # ---------------------------------------------------------------
+      # --- Signing -----------------------------------------------------
+
       - name: Re-sign nested Sparkle binaries
         run: |
           APP="build/Build/Products/Release/LightningTask.app"
@@ -157,18 +126,16 @@ jobs:
 
           codesign --verify --deep --strict --verbose=2 "$APP"
 
-      # ---------------------------------------------------------------
-      # 7. Zip-Zweig: erstellen + notarisieren (für Sparkle-Auto-Update)
-      # ---------------------------------------------------------------
+      # --- Zip: Sparkle auto-update artifact ----------------------------
+
       - name: Create & notarize Zip
         run: |
           cd build/Build/Products/Release
           ditto -c -k --keepParent LightningTask.app LightningTask.zip
           xcrun notarytool submit LightningTask.zip --keychain-profile "notary-profile" --wait
 
-      # ---------------------------------------------------------------
-      # 8. DMG-Zweig: erstellen, signieren, notarisieren, staplen
-      # ---------------------------------------------------------------
+      # --- DMG: first-install artifact ----------------------------------
+
       - name: Install create-dmg
         run: brew install create-dmg
 
@@ -195,25 +162,17 @@ jobs:
           xcrun stapler validate LightningTask.dmg
           spctl -a -vv -t install LightningTask.dmg
 
-      # ---------------------------------------------------------------
-      # 9. GitHub Release erstellen (Zip + DMG als Assets)
-      #    — bewusst VOR dem Appcast-Commit, damit die Download-URLs
-      #    schon live sind, sobald der Appcast öffentlich sichtbar wird
-      #    (siehe release-konzepte.md Abschnitt 12)
-      # ---------------------------------------------------------------
+      # --- Publish -------------------------------------------------------
+
       - name: Create GitHub Release
         run: |
           gh release create "${{ steps.version.outputs.tag }}" \
             build/Build/Products/Release/LightningTask.zip \
             build/Build/Products/Release/LightningTask.dmg \
             --title "${{ steps.version.outputs.tag }}" \
-            --notes "Automatisierter Release, Build ${{ steps.version.outputs.build }}." \
+            --notes "Automated release, build ${{ steps.version.outputs.build }}." \
             --target "${{ github.sha }}"
 
-      # ---------------------------------------------------------------
-      # 10. Appcast-Eintrag generieren (nur die neue Zip, EdDSA-Key aus
-      #     Secret via stdin — landet nie auf der Festplatte)
-      # ---------------------------------------------------------------
       - name: Generate appcast entry
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
@@ -229,31 +188,22 @@ jobs:
             --download-url-prefix "https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.tag }}/" \
             "$RUNNER_TEMP/appcast-staging"
 
-      # ---------------------------------------------------------------
-      # 11. Neuen Eintrag in die bestehende appcast.xml einfügen
-      #     (Historie bleibt erhalten statt überschrieben)
-      # ---------------------------------------------------------------
       - name: Merge appcast entry into existing history
         run: |
           python3 .github/scripts/merge_appcast.py \
             "$RUNNER_TEMP/appcast-staging/appcast.xml" \
             appcast.xml
 
-      # ---------------------------------------------------------------
-      # 12. appcast.xml committen + pushen — DAS ist der Moment, an dem
-      #     das Update für laufende Apps sichtbar wird
-      # ---------------------------------------------------------------
       - name: Commit & push appcast.xml
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add appcast.xml
-          git commit -m "Add ${{ steps.version.outputs.tag }} to appcast" || echo "Keine Änderungen an appcast.xml"
+          git commit -m "Add ${{ steps.version.outputs.tag }} to appcast" || echo "No changes to commit"
           git push
 
-      # ---------------------------------------------------------------
-      # 13. Aufräumen: temporäre Keychain + Notarization-Key entfernen
-      # ---------------------------------------------------------------
+      # --- Cleanup -------------------------------------------------------
+
       - name: Clean up keychain & credentials
         if: always()
         run: |
