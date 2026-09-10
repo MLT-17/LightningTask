@@ -39,6 +39,8 @@ import os
     /// Indicates if a save operation is in progress
     private(set) var isSaving: Bool = false
     
+    var todoItems: [TaskItem] = []
+    
     // MARK: - Computed Properties
     
     var reminderLists: [EKCalendar] {
@@ -83,7 +85,10 @@ import os
         isSaving = true
         defer { isSaving = false }
         
-        let items = suggestion?.items ?? [todo]
+        let trimmed = todo.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty || !todoItems.isEmpty else { return false }
+        // if user deletes all chips, then item is created from text user put to the textfield in panel. If user doesn't want to add, he has to close the panel
+        let items = !todoItems.isEmpty ? todoItems.map { $0.text } : [trimmed] // fallback, fast-mode
         
         var didCompleteSaving = true
         
@@ -115,7 +120,10 @@ import os
         
         do {
             suggestion = try await generateSuggestion(for: todo)
-            logger.debug("📅 Raw AI dueDate: '\(self.suggestion?.dueDate ?? "nil")'")  
+            if let suggestion {
+                todoItems = suggestion.items.map { TaskItem(text: $0) }
+            }
+            logger.debug("📅 Raw AI dueDate: '\(self.suggestion?.dueDate ?? "nil")'")
             selected = suggestion?.listNames.first
             alarmEnabled = true
         } catch {
@@ -126,9 +134,16 @@ import os
     /// Resets the form state after saving
     func reset() {
         suggestion = nil
+        todoItems = []
         todo = ""
         selected = nil
         alarmEnabled = true
+    }
+    
+    func deleteTodoItem(with id: UUID) {
+        self.todoItems = todoItems.filter { taskItem in
+            taskItem.id != id
+        }
     }
     
     // MARK: - Date Handling

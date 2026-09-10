@@ -10,9 +10,11 @@ import SwiftUI
 struct ChipView: View {
     var item: Binding<String>
     var isSelected: Bool
+    var prefillOnEdit: Bool = false
     var editableField: EditableField? = nil
     @Binding var editingChip: EditableField?
     var action: (() -> Void)? = nil
+    var onDelete: (() -> Void)? = nil
     
     @State private var editText: String = ""
     @FocusState private var isFocused: Bool
@@ -22,16 +24,20 @@ struct ChipView: View {
         return editingChip == field
     }
     
+    var isDateOrTime: Bool {
+        return editableField == .date || editableField == .time
+    }
+    
     var hasValue: Bool {
-        editableField != nil && !item.wrappedValue.isEmpty
+        isDateOrTime && !item.wrappedValue.isEmpty
     }
     
     var isHighlighted: Bool {
-        editableField != nil ? hasValue : isSelected
+        isDateOrTime ? hasValue : isSelected
     }
     
     var displayText: String {
-        guard editableField != nil, item.wrappedValue.isEmpty else { return item.wrappedValue }
+        guard isDateOrTime, item.wrappedValue.isEmpty else { return item.wrappedValue }
         return editableField == .date ? String(localized: "chip_no_date") : String(localized: "chip_no_time")
     }
     
@@ -61,12 +67,22 @@ struct ChipView: View {
                         .onChange(of: isEditing) { _, editing in
                             isFocused = editing
                             if editing {
-                                editText = ""
+                                editText = prefillOnEdit ? item.wrappedValue : ""
                             }
                         }
                         .onSubmit {
-                            item.wrappedValue = editText
+                            if editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                               let onDelete {
+                                onDelete()
+                            } else {
+                                item.wrappedValue = editText
+                            }
                             editingChip = nil
+                        }
+                        .onKeyPress(.escape) {
+                            editingChip = nil
+                            editText = ""
+                            return .handled
                         }
                 }
             }
@@ -74,7 +90,6 @@ struct ChipView: View {
             .onTapGesture {
                 if let field = editableField {
                     editingChip = field
-                    
                 } else {
                     action?()
                 }

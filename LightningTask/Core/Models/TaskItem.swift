@@ -6,3 +6,8 @@
 //
 
 import Foundation
+
+struct TaskItem: Identifiable, Equatable {
+    let id = UUID()
+    var text: String
+}
