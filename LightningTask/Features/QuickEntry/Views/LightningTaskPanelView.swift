@@ -85,6 +85,11 @@ struct LightningTaskPanelView: View {
                                 reminderViewModel.deleteTodoItem(with: item.id)
                             })
                         }
+                        
+                        AddButton {
+                            editingChip = .item(reminderViewModel.addEmptyItem())
+                        }
+                        
                         Spacer()
                     }
                     

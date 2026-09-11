@@ -46,6 +46,7 @@ struct ChipView: View {
         Text(displayText)
             .font(.system(size: LayoutConstants.chipFontSize, weight: .medium))
             .foregroundColor(isEditing ? .clear : (isHighlighted ? Color("ChipGreen") : .secondary))
+            .frame(minWidth: 30)
             .padding(.vertical, LayoutConstants.chipVerticalPadding)
             .padding(.horizontal, LayoutConstants.chipHorizontalPadding)
             .background(isHighlighted ? Color("ChipGreen").opacity(0.18) : .clear)
@@ -64,7 +65,7 @@ struct ChipView: View {
                         .focused($isFocused)
                         .allowsHitTesting(isEditing)
                         .opacity(isEditing ? 1 : 0)
-                        .onChange(of: isEditing) { _, editing in
+                        .onChange(of: isEditing, initial: true) { _, editing in
                             isFocused = editing
                             if editing {
                                 editText = prefillOnEdit ? item.wrappedValue : ""

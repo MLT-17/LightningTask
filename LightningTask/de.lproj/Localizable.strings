@@ -34,4 +34,4 @@
 "failed_to_save_reminder" = "Erinnerung konnte nicht gespeichert werden mit Text";
 
 // MARK: - AppConfig
-"fallback_list_name" = "Erinnerungen"
+"fallback_list_name" = "Erinnerungen";

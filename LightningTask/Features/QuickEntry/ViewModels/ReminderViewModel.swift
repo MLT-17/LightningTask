@@ -146,6 +146,12 @@ import os
         }
     }
     
+    func addEmptyItem() -> UUID {
+        let item = TaskItem(text: "")
+        todoItems.append(item)
+        return item.id
+    }
+    
     // MARK: - Date Handling
     
     private let dateParser = DateParser()
