@@ -34,11 +34,17 @@ def main() -> int:
         existing = f.read()
 
     # Falls dieselbe Version schon drin ist (z. B. Workflow wurde erneut
-    # laufen gelassen), nicht doppelt einfügen.
+    # laufen gelassen), nicht doppelt einfügen. Wichtig: gegen den
+    # kompletten <sparkle:version>-Tag prüfen, nicht nur die nackte Zahl —
+    # eine bloße Zahl wie "17" kann leicht zufällig als Teilstring in einer
+    # Signatur oder Dateigröße an anderer Stelle vorkommen und einen
+    # False Positive auslösen (der Insert würde dann fälschlich übersprungen).
     version_match = re.search(r"<sparkle:version>([^<]+)</sparkle:version>", new_item)
-    if version_match and version_match.group(1) in existing:
-        print(f"Version {version_match.group(1)} ist bereits in der appcast.xml enthalten, kein Insert nötig.")
-        return 0
+    if version_match:
+        version_tag = f"<sparkle:version>{version_match.group(1)}</sparkle:version>"
+        if version_tag in existing:
+            print(f"Version {version_match.group(1)} ist bereits in der appcast.xml enthalten, kein Insert nötig.")
+            return 0
 
     def insert_after_title(m: re.Match) -> str:
         return m.group(0) + "\n        " + new_item + "\n"

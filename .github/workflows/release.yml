@@ -95,6 +95,11 @@ jobs:
             exit 1
           fi
 
+          if [ "${{ github.ref_type }}" = "tag" ] && [ "${{ github.ref_name }}" != "$TAG" ]; then
+            echo "::error::Pushed tag is '${{ github.ref_name }}' but MARKETING_VERSION in Xcode resolves to '$TAG' — these must match exactly (e.g. '0.5.1' vs '0.51' is a common typo). Fix the version in Xcode, delete the pushed tag, and try again."
+            exit 1
+          fi
+
       - name: Verify entitlements
         run: |
           APP="build/Build/Products/Release/LightningTask.app"
