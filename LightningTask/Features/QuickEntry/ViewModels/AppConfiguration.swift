@@ -33,7 +33,7 @@ struct AppConfiguration {
     /// ReminderService.defaultList()?.title, which reads the user's system preference.
     /// This is only used as a last resort if EventKit is unavailable.
     var fallbackListName: String {
-        return "Inbox"  // System default on most locales
+        return String(localized: "fallback_list_name")  
     }
     
     // MARK: - Debounce Settings

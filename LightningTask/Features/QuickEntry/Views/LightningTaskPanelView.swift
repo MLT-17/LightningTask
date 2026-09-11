@@ -9,6 +9,8 @@ import SwiftUI
 enum EditableField: Hashable {
     case date
     case time
+    // associated value for differenciating between item chips which is edited
+    case item(UUID)
 }
 
 struct LightningTaskPanelView: View {
@@ -78,20 +80,27 @@ struct LightningTaskPanelView: View {
                 VStack(spacing: LayoutConstants.chipSpacing) {
                     
                     HStack(spacing: LayoutConstants.chipSpacing) {
-                        ForEach(suggestion.items, id: \.self) { item in
-                            ChipView(item: .constant(item), isSelected: false, editingChip: $editingChip)
+                        ForEach($reminderViewModel.todoItems) { $item in
+                            ChipView(item: $item.text, isSelected: false, prefillOnEdit: true, editableField: .item(item.id), editingChip: $editingChip, onDelete:  {
+                                reminderViewModel.deleteTodoItem(with: item.id)
+                            })
                         }
+                        
+                        AddButton {
+                            editingChip = .item(reminderViewModel.addEmptyItem())
+                        }
+                        
                         Spacer()
                     }
                     
                     
                     HStack(spacing: LayoutConstants.chipSpacing) {
                         ForEach(suggestion.listNames, id: \.self) { item in
-                            ChipView(item: .constant(item), isSelected: reminderViewModel.selected == item, editingChip: $editingChip)
-                            {
+                            ChipView(item: .constant(item), isSelected: reminderViewModel.selected == item, editingChip: $editingChip, action: {
                                 reminderViewModel.selected = item
                                 editingChip = nil
-                            }
+                            })
+                         
                         }
                         Spacer()
                     }

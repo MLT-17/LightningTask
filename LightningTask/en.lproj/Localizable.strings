@@ -32,3 +32,6 @@
 "available_lists" = "Available lists";
 "alarms" = "Alarms";
 "failed_to_save_reminder" = "Failed to save reminder with text";
+
+// MARK: - AppConfig
+"fallback_list_name" = "Reminders";
