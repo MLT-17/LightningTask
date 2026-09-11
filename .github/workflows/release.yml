@@ -196,11 +196,23 @@ jobs:
 
       - name: Commit & push appcast.xml
         run: |
+          # actions/checkout steht bei Tag-Trigger im "detached HEAD"-
+          # Zustand (auf dem Tag-Commit, nicht auf einem Branch) — ein
+          # direkter "git push" würde hier fehlschlagen. Deshalb den
+          # frisch gemergten Appcast-Inhalt sichern, explizit auf den
+          # echten main-Branch wechseln, und dort committen/pushen.
+          cp appcast.xml "$RUNNER_TEMP/appcast.xml.merged"
+
+          git fetch origin main
+          git checkout -B main origin/main
+
+          cp "$RUNNER_TEMP/appcast.xml.merged" appcast.xml
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add appcast.xml
           git commit -m "Add ${{ steps.version.outputs.tag }} to appcast" || echo "No changes to commit"
-          git push
+          git push origin main
 
       # --- Cleanup -------------------------------------------------------
 
