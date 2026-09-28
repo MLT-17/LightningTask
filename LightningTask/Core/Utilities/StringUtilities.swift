@@ -54,13 +54,15 @@ struct TokenBasedListMatcher {
         let inputLower = input.lowercased()
         let separators = CharacterSet(charactersIn: " /-_")
         return listTitles
-            .map { title -> (String, Int) in
+            .map { title -> (String, Int, Double) in
                 let tokens = title.lowercased().components(separatedBy: separators).filter { $0.count > 2 }
-                guard !tokens.isEmpty else { return (title, 0) }
-                return (title, tokens.filter { inputLower.contains($0) }.count)
+                guard !tokens.isEmpty else { return (title, 0, 0) }
+                let matched = tokens.filter { inputLower.contains($0) }.count
+                return (title, matched, Double(matched) / Double(tokens.count))
             }
             .filter { $0.1 > 0 }
-            .sorted { $0.1 != $1.1 ? $0.1 > $1.1 : $0.0.count > $1.0.count }
+            // 100%-Treffer (alle Tokens matchen) schlägt immer einen Teiltreffer, egal wie lang der Name ist
+            .sorted { $0.2 != $1.2 ? $0.2 > $1.2 : $0.1 > $1.1 }
             .map { $0.0 }
     }
 }

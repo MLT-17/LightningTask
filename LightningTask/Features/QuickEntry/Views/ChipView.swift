@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChipView: View {
-    var item: Binding<String>
+    @Binding var item: String
     var isSelected: Bool
     var prefillOnEdit: Bool = false
     var editableField: EditableField? = nil
@@ -19,26 +19,54 @@ struct ChipView: View {
     @State private var editText: String = ""
     @FocusState private var isFocused: Bool
     
+    init(item: Binding<String>, editableField: EditableField, editingChip: Binding<EditableField?>) {
+        self._item = item
+        self.isSelected = false
+        self.prefillOnEdit = false
+        self.editableField = editableField
+        self._editingChip = editingChip
+    }
+    
+    init(item: Binding<String>, isSelected: Bool, editingChip: Binding<EditableField?>, action: @escaping (() -> Void)) {
+        self._item = item
+        self.isSelected = isSelected
+        self._editingChip = editingChip
+        self.action = action
+    }
+    
+    init(item: Binding<String>, prefillOnEdit: Bool, editableField: EditableField, editingChip: Binding<EditableField?>, onDelete: @escaping (() -> Void)) {
+        self._item = item
+        self.isSelected = false
+        self.prefillOnEdit = prefillOnEdit
+        self.editableField = editableField
+        self._editingChip = editingChip
+        self.onDelete = onDelete
+    }
+    
     var isEditing: Bool {
         guard let field = editableField else { return false }
         return editingChip == field
     }
     
-    var isDateOrTime: Bool {
-        return editableField == .date || editableField == .time
+    var isDateOrTimeChip: Bool {
+        editableField == .date || editableField == .time
     }
     
     var hasValue: Bool {
-        isDateOrTime && !item.wrappedValue.isEmpty
+        isDateOrTimeChip && !item.isEmpty
     }
     
     var isHighlighted: Bool {
-        isDateOrTime ? hasValue : isSelected
+        isDateOrTimeChip ? hasValue : isSelected
     }
     
     var displayText: String {
-        guard isDateOrTime, item.wrappedValue.isEmpty else { return item.wrappedValue }
+        guard isDateOrTimeChip, item.isEmpty else { return item }
         return editableField == .date ? String(localized: "chip_no_date") : String(localized: "chip_no_time")
+    }
+    
+    var isEditable: Bool {
+        return editableField != nil
     }
     
     var body: some View {
@@ -56,7 +84,7 @@ struct ChipView: View {
                 lineWidth: isHighlighted ? LayoutConstants.chipSelectedBorderWidth : LayoutConstants.chipUnselectedBorderWidth
             ))
             .overlay {
-                if editableField != nil {
+                if isEditable {
                     TextField("", text: $editText)
                         .font(.system(size: LayoutConstants.chipFontSize, weight: .medium))
                         .textFieldStyle(.plain)
@@ -68,7 +96,7 @@ struct ChipView: View {
                         .onChange(of: isEditing, initial: true) { _, editing in
                             isFocused = editing
                             if editing {
-                                editText = prefillOnEdit ? item.wrappedValue : ""
+                                editText = prefillOnEdit ? item : ""
                             }
                         }
                         .onSubmit {
@@ -76,11 +104,15 @@ struct ChipView: View {
                                let onDelete {
                                 onDelete()
                             } else {
-                                item.wrappedValue = editText
+                                item = editText
                             }
                             editingChip = nil
                         }
                         .onKeyPress(.escape) {
+                            if item.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let onDelete {
+                                onDelete()
+                            }
+                            
                             editingChip = nil
                             editText = ""
                             return .handled

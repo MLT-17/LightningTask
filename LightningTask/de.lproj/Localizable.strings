@@ -9,6 +9,16 @@
 "new_task_placeholder" = "Neue Aufgabe";
 "date_picker_label" = "Datum";
 
+// MARK: - Mode Indicator
+"mode_lightning" = "Lightning Mode";
+"mode_ai" = "AI Mode";
+
+// MARK: - Quick Entry Errors
+"error_model_unavailable" = "Kein KI-Modell verfügbar – wird direkt in die Standardliste gespeichert";
+"error_suggestion_failed" = "KI-Vorschlag fehlgeschlagen – wird direkt in die Standardliste gespeichert";
+"error_permission_denied" = "Keine Berechtigung für Erinnerungen";
+"error_save_failed" = "Speichern fehlgeschlagen";
+
 // MARK: - Chips
 "chip_no_date" = "Kein Datum";
 "chip_no_time" = "Keine Uhrzeit";
@@ -17,17 +27,7 @@
 "menu_check_for_updates" = "Nach Updates suchen…";
 "menu_quit" = "LightningTask beenden";
 
-// MARK: - Status Messages
-"reminder_access_granted" = "✅ Erinnerungszugriff gewährt";
-"reminder_access_denied" = "❌ Erinnerungszugriff verweigert";
-"model_available" = "📋 Modell verfügbar";
-"failed_to_save" = "❌ Speichern der Erinnerungen fehlgeschlagen";
-"failed_to_generate_suggestion" = "⚠️ Vorschlag konnte nicht generiert werden";
-
 // MARK: - Debug/Logging
-"raw_ai_list_names" = "🤖 KI-Rohdaten Listennamen";
-"after_snap" = "📍 Nach Snap";
-"token_candidates" = "🎯 Token-Kandidaten";
 "looking_for_list" = "Suche nach Liste";
 "available_lists" = "Verfügbare Listen";
 "alarms" = "Alarme";

@@ -14,14 +14,16 @@ struct AddButton: View {
             action()
         } label: {
             Image(systemName: "plus")
+                .frame(width: 30, height: 30)
+                .foregroundColor(.secondary)
+                .overlay {
+                    Circle().strokeBorder(.white.opacity(0.18))
+                }
+                .contentShape(Circle())
         }
-        .frame(width: 30, height: 30)
-        .foregroundColor(.secondary)
-        .overlay {
-            Circle().strokeBorder(.white.opacity(0.18))
-        }
+       
         .buttonStyle(.plain)
-        .contentShape(Circle())
+        
     }
 }
 
