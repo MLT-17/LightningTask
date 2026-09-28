@@ -3,6 +3,17 @@
     <channel>
         <title>LightningTask</title>
         <item>
+            <title>0.5.2</title>
+            <pubDate>Mon, 28 Sep 2026 17:40:39 +0000</pubDate>
+            <sparkle:version>18</sparkle:version>
+            <sparkle:shortVersionString>0.5.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <sparkle:releaseNotesLink>https://raw.githubusercontent.com/MLT-17/LightningTask/main/LightningTask.html</sparkle:releaseNotesLink>
+            <enclosure url="https://github.com/MLT-17/LightningTask/releases/download/v0.5.2/LightningTask.zip" length="6588181" type="application/octet-stream" sparkle:edSignature="jh0C8YeQsJAZoqHVlSyoF0SdcdEluSV28WMSm93b9xtml88iJSh2MRDRJLZzto0AXijagPDUH3qT+DzN7wsEDQ=="/>
+        </item>
+
+        <item>
             <title>0.5.1</title>
             <pubDate>Fri, 11 Sep 2026 16:16:42 +0000</pubDate>
             <sparkle:version>17</sparkle:version>
