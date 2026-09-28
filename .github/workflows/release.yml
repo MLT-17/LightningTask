@@ -117,7 +117,6 @@ jobs:
           fi
 
           {
-            echo "<html><body>"
             in_list=0
             while IFS= read -r line; do
               case "$line" in
@@ -139,7 +138,6 @@ jobs:
               esac
             done < "$RUNNER_TEMP/changelog-snippet.md"
             if [ "$in_list" = 1 ]; then echo "</ul>"; fi
-            echo "</body></html>"
           } > "$RUNNER_TEMP/changelog-snippet.html"
 
       - name: Verify entitlements

@@ -9,7 +9,18 @@
             <sparkle:shortVersionString>0.5.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <sparkle:releaseNotesLink>https://raw.githubusercontent.com/MLT-17/LightningTask/main/LightningTask.html</sparkle:releaseNotesLink>
+            <description><![CDATA[
+<h3>Fixed</h3>
+<ul>
+<li>Larger tap area on add/alarm buttons</li>
+<li>Bugfixes and error handling with UI messages</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>Visual feedback on suggestion generation and success animation</li>
+<li>Mode chip, magic-number cleanup</li>
+</ul>
+]]></description>
             <enclosure url="https://github.com/MLT-17/LightningTask/releases/download/v0.5.2/LightningTask.zip" length="6588181" type="application/octet-stream" sparkle:edSignature="jh0C8YeQsJAZoqHVlSyoF0SdcdEluSV28WMSm93b9xtml88iJSh2MRDRJLZzto0AXijagPDUH3qT+DzN7wsEDQ=="/>
         </item>
 
