@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.3] - 2026-09-28
+### Fixed
+- Update window now reliably shown as frontmost window
+
 ## [0.5.2] - 2026-09-28
 ### Fixed
 - Larger tap area on add/alarm buttons

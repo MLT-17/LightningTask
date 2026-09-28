@@ -93,6 +93,10 @@ class LightningTaskPanelController {
     }
 
     @objc func checkForUpdates() {
+        // LSUIElement apps don't auto-activate on window creation, so without
+        // this the "update available" window can appear behind other apps —
+        // looks like nothing happened until a second check.
+        NSApp.activate(ignoringOtherApps: true)
         updaterController.updater.checkForUpdates()
     }
 
