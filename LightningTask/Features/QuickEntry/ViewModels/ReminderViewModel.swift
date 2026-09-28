@@ -39,7 +39,14 @@ import os
     /// Indicates if a save operation is in progress
     private(set) var isSaving: Bool = false
     
+    /// Indicates if generating suggestion is in progress
+    private(set) var isGeneratingSuggestion: Bool = false
+    
+    /// list of created items
     var todoItems: [TaskItem] = []
+    
+    /// Errors
+    private(set) var quickEntryError: QuickEntryError?
     
     // MARK: - Computed Properties
     
@@ -72,6 +79,7 @@ import os
                 logger.info("📋 Model available: \(self.modelAvailable)")
             } catch {
                 logger.error("❌ Reminder access denied: \(error)")
+                quickEntryError = .permissionDenied
             }
         }
     }
@@ -104,8 +112,12 @@ import os
                 try reminderService.createReminder(options: options)
             } catch {
                 logger.error("❌ Failed to save reminder: \(error)")
+                quickEntryError = .saveFailed
                 didCompleteSaving = false
             }
+        }
+        if didCompleteSaving {
+            quickEntryError = nil
         }
         return didCompleteSaving
     }
@@ -113,21 +125,33 @@ import os
     /// Refreshes AI suggestions for the current `todo` text
     /// Debounced (500ms) and respects Task cancellation
     func refreshSuggestion() async {
-        guard todo.count > 2, modelAvailable else { return }
+        guard todo.count > 2 else { return }
+        
+        guard modelAvailable else {
+            quickEntryError = .modelUnavailable
+            return
+        }
         
         try? await Task.sleep(for: .milliseconds(500))
         guard !Task.isCancelled else { return }
-        
+        isGeneratingSuggestion = true
+        defer { isGeneratingSuggestion = false }
         do {
+            
             suggestion = try await generateSuggestion(for: todo)
             if let suggestion {
                 todoItems = suggestion.items.map { TaskItem(text: $0) }
+            }
+            
+            if quickEntryError == .modelUnavailable || quickEntryError == .suggestionFailed {
+                quickEntryError = nil
             }
             logger.debug("📅 Raw AI dueDate: '\(self.suggestion?.dueDate ?? "nil")'")
             selected = suggestion?.listNames.first
             alarmEnabled = true
         } catch {
             logger.warning("⚠️ Failed to generate suggestion: \(error)")
+            quickEntryError = .suggestionFailed
         }
     }
     
@@ -246,7 +270,7 @@ import os
             return
         }
         
-        if let date = dateParser.parseDate(newValue, formats: dateFormats) {
+        if let date = dateParser.parseDate(newValue, formats: DateConstants.dateFormats) {
             let dateString = dateParser.storageDateString(from: date)
             suggestion.dueDate = dateString
             self.suggestion = suggestion
@@ -262,7 +286,7 @@ import os
             return
         }
         
-        if let time = dateParser.parseTime(newValue, formats: timeFormats) {
+        if let time = dateParser.parseTime(newValue, formats: DateConstants.timeFormats) {
             let timeString = dateParser.storageTimeString(from: time)
             
             // if no date yet, set to today

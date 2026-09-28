@@ -15,6 +15,8 @@ enum LayoutConstants {
     /// Width of the quick-entry panel
     static let panelWidth: CGFloat = 600
     
+    static let taskInputFieldWidth: CGFloat = 500
+    
     /// Minimum height of the panel (without suggestions)
     static let panelMinHeight: CGFloat = 80
     
@@ -58,7 +60,12 @@ enum LayoutConstants {
     static let chipUnselectedBorderWidth: CGFloat = 0.5
     
     // MARK: - Corner Radius
-    
+
     /// Corner radius for the panel background
     static let panelCornerRadius: CGFloat = 16
+
+    // MARK: - Animation
+
+    /// Duration of the success flash (border + icon morph) after a save
+    static let successAnimationDuration: TimeInterval = 0.7
 }

@@ -9,6 +9,16 @@
 "new_task_placeholder" = "New Task";
 "date_picker_label" = "Date";
 
+// MARK: - Mode Indicator
+"mode_lightning" = "Lightning Mode";
+"mode_ai" = "AI Mode";
+
+// MARK: - Quick Entry Errors
+"error_model_unavailable" = "No AI model available – saving directly to the default list";
+"error_suggestion_failed" = "AI suggestion failed – saving directly to the default list";
+"error_permission_denied" = "No permission for Reminders";
+"error_save_failed" = "Failed to save";
+
 // MARK: - Chips
 "chip_no_date" = "No Date";
 "chip_no_time" = "No Time";
@@ -17,17 +27,7 @@
 "menu_check_for_updates" = "Check for Updates…";
 "menu_quit" = "Quit LightningTask";
 
-// MARK: - Status Messages
-"reminder_access_granted" = "✅ Reminder access granted";
-"reminder_access_denied" = "❌ Reminder access denied";
-"model_available" = "📋 Model available";
-"failed_to_save" = "❌ Failed to save reminders";
-"failed_to_generate_suggestion" = "⚠️ Failed to generate suggestion";
-
 // MARK: - Debug/Logging
-"raw_ai_list_names" = "🤖 Raw AI listNames";
-"after_snap" = "📍 After snap";
-"token_candidates" = "🎯 Token candidates";
 "looking_for_list" = "Looking for list";
 "available_lists" = "Available lists";
 "alarms" = "Alarms";

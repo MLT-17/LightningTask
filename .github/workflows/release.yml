@@ -100,6 +100,48 @@ jobs:
             exit 1
           fi
 
+      - name: Extract changelog entry
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found=1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > "$RUNNER_TEMP/changelog-snippet.md"
+
+          if [ ! -s "$RUNNER_TEMP/changelog-snippet.md" ]; then
+            echo "::error::Kein Changelog-Eintrag für Version $VERSION in CHANGELOG.md gefunden."
+            exit 1
+          fi
+
+          {
+            echo "<html><body>"
+            in_list=0
+            while IFS= read -r line; do
+              case "$line" in
+                "### "*)
+                  if [ "$in_list" = 1 ]; then echo "</ul>"; in_list=0; fi
+                  echo "<h3>${line#\#\#\# }</h3>"
+                  ;;
+                "- "*)
+                  if [ "$in_list" = 0 ]; then echo "<ul>"; in_list=1; fi
+                  echo "<li>${line#- }</li>"
+                  ;;
+                "")
+                  if [ "$in_list" = 1 ]; then echo "</ul>"; in_list=0; fi
+                  ;;
+                *)
+                  if [ "$in_list" = 1 ]; then echo "</ul>"; in_list=0; fi
+                  echo "<p>$line</p>"
+                  ;;
+              esac
+            done < "$RUNNER_TEMP/changelog-snippet.md"
+            if [ "$in_list" = 1 ]; then echo "</ul>"; fi
+            echo "</body></html>"
+          } > "$RUNNER_TEMP/changelog-snippet.html"
+
       - name: Verify entitlements
         run: |
           APP="build/Build/Products/Release/LightningTask.app"
@@ -175,7 +217,7 @@ jobs:
             build/Build/Products/Release/LightningTask.zip \
             build/Build/Products/Release/LightningTask.dmg \
             --title "${{ steps.version.outputs.tag }}" \
-            --notes "Automated release, build ${{ steps.version.outputs.build }}." \
+            --notes-file "$RUNNER_TEMP/changelog-snippet.md" \
             --target "${{ github.sha }}"
 
       - name: Generate appcast entry
@@ -187,6 +229,7 @@ jobs:
 
           mkdir -p "$RUNNER_TEMP/appcast-staging"
           cp build/Build/Products/Release/LightningTask.zip "$RUNNER_TEMP/appcast-staging/"
+          cp "$RUNNER_TEMP/changelog-snippet.html" "$RUNNER_TEMP/appcast-staging/LightningTask.html"
 
           echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_BIN/generate_appcast" \
             --ed-key-file - \
