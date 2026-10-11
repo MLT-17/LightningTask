@@ -210,11 +210,11 @@ struct LightningTaskPanelView: View {
         }
         .overlay(alignment: .bottom) {
             ModeIndicatorChip(isGenerating: reminderViewModel.suggestion != nil || reminderViewModel.isGeneratingSuggestion)
-                
+
         }
-      
-        
-        
+        .preferredColorScheme(.dark)
+
+
     }
 }
 

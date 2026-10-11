@@ -149,6 +149,8 @@ import os
             logger.debug("📅 Raw AI dueDate: '\(self.suggestion?.dueDate ?? "nil")'")
             selected = suggestion?.listNames.first
             alarmEnabled = true
+        } catch is CancellationError {
+            // user kept typing — not a real error
         } catch {
             logger.warning("⚠️ Failed to generate suggestion: \(error)")
             quickEntryError = .suggestionFailed
