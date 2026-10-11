@@ -3,6 +3,22 @@
     <channel>
         <title>LightningTask</title>
         <item>
+            <title>0.5.4</title>
+            <pubDate>Sun, 11 Oct 2026 14:22:09 +0000</pubDate>
+            <sparkle:version>20</sparkle:version>
+            <sparkle:shortVersionString>0.5.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h3>Fixed</h3>
+<ul>
+<li>Panel now always renders in dark appearance, regardless of the system light/dark mode setting</li>
+<li>Suggestion generation no longer shows an error when the user keeps typing before it completes</li>
+</ul>
+]]></description>
+            <enclosure url="https://github.com/MLT-17/LightningTask/releases/download/v0.5.4/LightningTask.zip" length="6589059" type="application/octet-stream" sparkle:edSignature="YGlI99YmqPCZ6X58QCFvYw8cHn2IAiPvdqxpBsv0lrR49O0O9WuZDDKL1LdB96UX1kSt2F8pFcIrFVpYhbrUAQ=="/>
+        </item>
+
+        <item>
             <title>0.5.3</title>
             <pubDate>Mon, 28 Sep 2026 20:24:13 +0000</pubDate>
             <sparkle:version>19</sparkle:version>
