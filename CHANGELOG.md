@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.4] - 2026-10-11
+### Fixed
+- Panel now always renders in dark appearance, regardless of the system light/dark mode setting
+- Suggestion generation no longer shows an error when the user keeps typing before it completes
+
 ## [0.5.3] - 2026-09-28
 ### Fixed
 - Update window now reliably shown as frontmost window
